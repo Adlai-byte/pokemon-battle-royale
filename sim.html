@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokemon Battle Royale - Simulation</title>
+    <style>
+        body { background: #111; color: #eee; font-family: monospace; padding: 20px; }
+        #status { font-size: 1.2rem; margin-bottom: 20px; color: #f5a623; }
+        #progress-bar { width: 400px; height: 20px; background: #333; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+        #progress-fill { height: 100%; background: #e94560; width: 0%; transition: width 0.1s; }
+        #results { white-space: pre-wrap; font-size: 0.85rem; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <h1>Pokemon Battle Royale - 100 Game Simulation</h1>
+    <div id="status">Initializing...</div>
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+    <div id="results"></div>
+
+    <script type="module">
+        import { POKEMON_DATA, EVOLUTION_CHAINS, getTypeMultiplier } from './js/data.js';
+        import { getMoveset, MOVE_CAT } from './js/moves.js';
+
+        // Minimal Pokemon class for simulation (no sprites/canvas)
+        const HP_MULTIPLIER = 3;
+        const COMBAT_RANGE = 80;
+
+        // BST-based balance scaling (matches pokemon.js)
+        function getBstScaling(stats) {
+            const bst = stats.hp + stats.attack + stats.defense + stats.spAtk + stats.spDef + stats.speed;
+            if (bst >= 600) return 0.88;
+            if (bst >= 525) return 0.94;
+            if (bst >= 450) return 1.0;
+            if (bst >= 350) return 1.10;
+            if (bst >= 280) return 1.20;
+            return 1.30;
+        }
+
+        class SimPokemon {
+            constructor(data) {
+                this.id = data.id;
+                this.name = data.name;
+                this.types = data.types;
+                this.baseStats = data.stats;
+                const scale = getBstScaling(data.stats);
+                this.maxHp = Math.round(data.stats.hp * HP_MULTIPLIER * scale);
+                this.hp = this.maxHp;
+                this.attack = Math.round(data.stats.attack * scale);
+                this.defense = Math.round(data.stats.defense * scale);
+                this.spAtk = Math.round(data.stats.spAtk * scale);
+                this.spDef = Math.round(data.stats.spDef * scale);
+                this.speed = Math.round(data.stats.speed * (scale > 1 ? (1 + (scale - 1) * 0.5) : scale));
+                this.statMods = { atk: 0, def: 0, spAtk: 0, spDef: 0, spd: 0 };
+                this.moves = getMoveset(data.id);
+                this.shieldTimer = 0;
+                this.statusEffect = null;
+                this.statusTimer = 0;
+                this.x = Math.random() * 1100 + 50;
+                this.y = Math.random() * 700 + 50;
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.energy = 0;
+                this.maxEnergy = 100;
+                this.alive = true;
+                this.target = null;
+                this.combatCooldown = 0;
+                this.killCount = 0;
+                this.originalId = data.id;
+                this.focusSash = false;
+                this.evolved = false;
+                this.eliminating = false;
+                this.eliminatedBy = null;
+                this.stats = { damageDealt: 0, damageTaken: 0, kills: 0, itemsPickedUp: 0, movesUsed: 0 };
+                this.placement = 0; // Set when eliminated
+                this.evolvedInto = null;
+            }
+            _stageMult(stage) {
+                const s = Math.max(-6, Math.min(6, stage));
+                return s >= 0 ? (2 + s) / 2 : 2 / (2 - s);
+            }
+            getAtk() { return this.attack * this._stageMult(this.statMods.atk); }
+            getDef() { return this.defense * this._stageMult(this.statMods.def); }
+            getSpAtk() { return this.spAtk * this._stageMult(this.statMods.spAtk); }
+            getSpDef() { return this.spDef * this._stageMult(this.statMods.spDef); }
+            getSpd() { return this.speed * this._stageMult(this.statMods.spd); }
+            boostStat(stat, stages) { this.statMods[stat] = Math.max(-6, Math.min(6, this.statMods[stat] + stages)); }
+            heal(percent) { this.hp = Math.min(this.maxHp, this.hp + this.maxHp * percent); }
+            gainEnergy(amount) { this.energy = Math.min(this.maxEnergy, this.energy + amount); }
+            distanceTo(other) {
+                const dx = this.x - other.x;
+                const dy = this.y - other.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+            canEvolve() {
+                const chain = EVOLUTION_CHAINS[this.id];
+                return chain && this.killCount >= chain.killsNeeded;
+            }
+            evolve(newData) {
+                const hpRatio = this.hp / this.maxHp;
+                const oldName = this.name;
+                this.id = newData.id;
+                this.name = newData.name;
+                this.types = newData.types;
+                const scale = getBstScaling(newData.stats);
+                this.maxHp = Math.round(newData.stats.hp * HP_MULTIPLIER * scale);
+                this.hp = Math.max(1, Math.round(this.maxHp * hpRatio));
+                this.attack = Math.round(newData.stats.attack * scale);
+                this.defense = Math.round(newData.stats.defense * scale);
+                this.spAtk = Math.round(newData.stats.spAtk * scale);
+                this.spDef = Math.round(newData.stats.spDef * scale);
+                this.speed = Math.round(newData.stats.speed * (scale > 1 ? (1 + (scale - 1) * 0.5) : scale));
+                this.moves = getMoveset(newData.id);
+                this.statMods = { atk: 0, def: 0, spAtk: 0, spDef: 0, spd: 0 };
+                this.gainEnergy(30);
+                this.evolved = true;
+                this.evolvedInto = newData.name;
+                return oldName;
+            }
+            update(dt) {
+                if (!this.alive) return;
+                if (this.combatCooldown > 0) this.combatCooldown -= dt;
+                if (this.shieldTimer > 0) this.shieldTimer -= dt;
+                if (this.statusTimer > 0) { this.statusTimer -= dt; if (this.statusTimer <= 0) this.statusEffect = null; }
+                // Evolved regen
+                if (this.evolved && this.hp < this.maxHp) {
+                    this.hp = Math.min(this.maxHp, this.hp + this.maxHp * 0.001 * (dt / 16));
+                }
+                // Movement toward target
+                const hasTarget = this.target && this.target.alive && !this.target.eliminating;
+                if (hasTarget) {
+                    const dist = this.distanceTo(this.target);
+                    if (dist > COMBAT_RANGE * 0.85) {
+                        const dx = this.target.x - this.x;
+                        const dy = this.target.y - this.y;
+                        const d = Math.sqrt(dx*dx+dy*dy) || 1;
+                        const step = Math.min(d, (this.speed / 100) * 0.8 * (dt / 16));
+                        this.x += (dx/d) * step;
+                        this.y += (dy/d) * step;
+                    }
+                }
+            }
+        }
+
+        // Simulation battle engine (stripped of effects/animations)
+        const AUTO_DAMAGE = 8;
+        const SPECIAL_DAMAGE = 12;
+        const ENERGY_ON_AUTO = 10;
+        const ENERGY_BASE_ON_HIT = 15;
+        const ENERGY_DAMAGE_SCALE = 40;
+        const BASE_ATTACK_COOLDOWN = 1200;
+        const SPECIAL_COOLDOWN = 800;
+        const HEAL_PERCENT = 0.10;
+        const AOE_RANGE = 150;
+        const GHOST_DODGE_CHANCE = 0.20;
+        const STEEL_DAMAGE_REDUCTION = 0.85;
+        const GRASS_REGEN_RATE = 0.0005;
+        const POISON_DOT_REDUCTION = 0.5;
+
+        class SimBattle {
+            constructor() {
+                this.elimOrder = [];
+            }
+
+            run(pokemons, maxTicks = 20000) {
+                const dt = 16; // ~60fps
+                for (let tick = 0; tick < maxTicks; tick++) {
+                    const alive = pokemons.filter(p => p.alive && !p.eliminating);
+                    if (alive.length <= 1) break;
+
+                    // Grass regen + DOT
+                    for (const p of alive) {
+                        if (p.types.includes('grass') && p.hp < p.maxHp) {
+                            p.hp = Math.min(p.maxHp, p.hp + p.maxHp * GRASS_REGEN_RATE * (dt / 16));
+                        }
+                        if (p.statusEffect === 'poison' || p.statusEffect === 'toxic' || p.statusEffect === 'burn') {
+                            const rate = p.statusEffect === 'toxic' ? 0.003 : 0.002;
+                            let dotDmg = p.maxHp * rate * (dt / 16);
+                            if (p.types.includes('poison')) dotDmg *= POISON_DOT_REDUCTION;
+                            p.hp -= dotDmg;
+                            p.gainEnergy(dotDmg / p.maxHp * 10);
+                            if (p.hp <= 0 && !p.eliminating) {
+                                p.hp = 0; p.alive = false; p.eliminating = true;
+                                p.placement = alive.length;
+                                this.elimOrder.push(p.originalId);
+                            }
+                        }
+                    }
+
+                    // Targeting
+                    for (const p of alive) {
+                        if (!p.target || !p.target.alive || p.target.eliminating) {
+                            let nearest = null, nearestDist = Infinity;
+                            for (const o of alive) {
+                                if (o === p) continue;
+                                const d = p.distanceTo(o);
+                                if (d < nearestDist) { nearestDist = d; nearest = o; }
+                            }
+                            p.target = nearest;
+                        }
+                    }
+
+                    // Update all
+                    for (const p of pokemons) p.update(dt);
+
+                    // Combat
+                    for (const p of alive) {
+                        if (p.combatCooldown > 0 || !p.target || !p.alive) continue;
+                        if (p.distanceTo(p.target) > COMBAT_RANGE) continue;
+                        if (!this._canAct(p)) { p.combatCooldown = 500; continue; }
+
+                        if (p.energy >= p.maxEnergy) {
+                            this._useSpecial(p, p.target, alive);
+                            p.energy = 0;
+                            p.combatCooldown = SPECIAL_COOLDOWN;
+                        } else {
+                            this._basicAttack(p, p.target, alive);
+                            p.combatCooldown = BASE_ATTACK_COOLDOWN / Math.max(0.5, p.getSpd() / 80);
+                        }
+                    }
+                }
+
+                const survivors = pokemons.filter(p => p.alive);
+                if (survivors.length === 1) {
+                    survivors[0].placement = 1;
+                }
+                return survivors[0] || null;
+            }
+
+            _canAct(p) {
+                if (p.statusEffect === 'sleep') { if (Math.random() < 0.4) { p.statusEffect = null; return true; } return false; }
+                if (p.statusEffect === 'paralyze' && Math.random() < 0.25) return false;
+                if (p.statusEffect === 'freeze') { if (Math.random() < 0.2) { p.statusEffect = null; return true; } return false; }
+                return true;
+            }
+
+            _basicAttack(atk, def, alive) {
+                if (def.types.includes('ghost') && Math.random() < GHOST_DODGE_CHANCE) {
+                    atk.combatCooldown = 600; return;
+                }
+                const isPhys = atk.getAtk() >= atk.getSpAtk();
+                let atkStat = isPhys ? atk.getAtk() : atk.getSpAtk();
+                const defStat = isPhys ? def.getDef() : def.getSpDef();
+                if (atk.statusEffect === 'burn' && isPhys) atkStat *= 0.5;
+                let dmg = Math.max(1, Math.round(AUTO_DAMAGE * (atkStat / defStat) * (0.85 + Math.random() * 0.3)));
+                if (def.types.includes('steel')) dmg = Math.max(1, Math.round(dmg * STEEL_DAMAGE_REDUCTION));
+                if (def.shieldTimer > 0) { dmg = Math.round(dmg * 0.3); def.shieldTimer = 0; }
+                def.hp -= dmg;
+                atk.stats.damageDealt += dmg;
+                def.stats.damageTaken += dmg;
+                atk.gainEnergy(ENERGY_ON_AUTO);
+                def.gainEnergy(ENERGY_BASE_ON_HIT + (dmg / def.maxHp) * ENERGY_DAMAGE_SCALE);
+                this._checkLethal(def, atk, alive);
+            }
+
+            _useSpecial(user, target, alive) {
+                if (user.statusEffect === 'confuse' && Math.random() < 0.33) {
+                    const selfDmg = Math.round(user.maxHp * 0.05);
+                    user.hp -= selfDmg;
+                    this._checkLethal(user, target, alive);
+                    return;
+                }
+                const move = this._pickMove(user, target);
+                if (move.cat === MOVE_CAT.PHYSICAL || move.cat === MOVE_CAT.SPECIAL) {
+                    this._executeDamaging(user, target, move, alive);
+                } else if (move.cat === MOVE_CAT.DEFENSE) {
+                    this._executeDefense(user, move);
+                } else if (move.cat === MOVE_CAT.ENHANCE) {
+                    this._executeEnhance(user, target, move);
+                } else if (move.cat === MOVE_CAT.STATUS) {
+                    this._executeStatus(user, target, move);
+                }
+                user.stats.movesUsed++;
+            }
+
+            _pickMove(user, target) {
+                const moves = user.moves;
+                const hpR = user.hp / user.maxHp;
+                const tHpR = target.hp / target.maxHp;
+                const weights = moves.map(m => {
+                    let w = 1;
+                    if (m.cat === MOVE_CAT.PHYSICAL || m.cat === MOVE_CAT.SPECIAL) {
+                        w = 3; if (tHpR < 0.3) w = 6;
+                        if (user.types.includes(m.type)) w += 1;
+                        const mult = getTypeMultiplier(m.type, target.types);
+                        if (mult > 1) w += 2; if (mult === 0) w = 0.1;
+                        if (m.aoe) w += 1;
+                    } else if (m.cat === MOVE_CAT.DEFENSE) {
+                        w = hpR < 0.4 ? 3 : 1; if (m.effect === 'heal' && hpR < 0.5) w = 4;
+                    } else if (m.cat === MOVE_CAT.ENHANCE) {
+                        w = hpR > 0.6 ? 2 : 0.5;
+                        const tb = Object.values(user.statMods).reduce((a,b) => a+b, 0);
+                        if (tb > 4) w *= 0.3;
+                    } else if (m.cat === MOVE_CAT.STATUS) { w = target.statusEffect ? 0.2 : 2; }
+                    return w;
+                });
+                const total = weights.reduce((a,b) => a+b, 0);
+                let r = Math.random() * total;
+                for (let i = 0; i < moves.length; i++) { r -= weights[i]; if (r <= 0) return moves[i]; }
+                return moves[0];
+            }
+
+            _executeDamaging(atk, def, move, alive) {
+                if (def.types.includes('ghost') && move.type !== 'ghost' && move.type !== 'dark' && Math.random() < GHOST_DODGE_CHANCE) {
+                    atk.stats.movesUsed++; return;
+                }
+                const typeMult = getTypeMultiplier(move.type, def.types);
+                let atkStat, defStat;
+                if (move.cat === MOVE_CAT.PHYSICAL) {
+                    atkStat = atk.getAtk(); defStat = def.getDef();
+                    if (atk.statusEffect === 'burn') atkStat *= 0.5;
+                } else { atkStat = atk.getSpAtk(); defStat = def.getSpDef(); }
+                const stab = atk.types.includes(move.type) ? 1.5 : 1;
+                const isCrit = Math.random() < (move.effect === 'highCrit' ? 0.25 : 0.06);
+                const critMult = isCrit ? 1.5 : 1;
+                const raw = SPECIAL_DAMAGE * (move.power/100) * (atkStat/defStat) * stab * critMult * (0.85 + Math.random()*0.3);
+                let dmg = Math.max(1, Math.round(raw * typeMult));
+                if (def.types.includes('steel')) dmg = Math.max(1, Math.round(dmg * STEEL_DAMAGE_REDUCTION));
+                if (def.shieldTimer > 0) { dmg = Math.round(dmg * 0.3); def.shieldTimer = 0; }
+                def.hp -= dmg;
+                atk.stats.damageDealt += dmg;
+                def.stats.damageTaken += dmg;
+                def.gainEnergy(ENERGY_BASE_ON_HIT + (dmg/def.maxHp) * ENERGY_DAMAGE_SCALE * 1.5);
+                if (move.effect === 'drain') atk.heal(Math.round(dmg*0.5) / atk.maxHp);
+                if (move.effect === 'recoil') atk.hp -= Math.round(dmg * 0.25);
+                if (move.effect === 'selfKO') { atk.hp = 0; this._eliminate(atk, def, alive); }
+                // AOE
+                if (move.aoe) {
+                    for (const b of alive) {
+                        if (b === atk || b === def || !b.alive) continue;
+                        if (b.distanceTo(def) < AOE_RANGE) {
+                            const bm = getTypeMultiplier(move.type, b.types);
+                            const bd = Math.max(1, Math.round(dmg * 0.6 * bm));
+                            b.hp -= bd;
+                            atk.stats.damageDealt += bd;
+                            b.stats.damageTaken += bd;
+                            b.gainEnergy(ENERGY_BASE_ON_HIT + (bd/b.maxHp)*ENERGY_DAMAGE_SCALE);
+                            this._checkLethal(b, atk, alive);
+                        }
+                    }
+                }
+                this._checkLethal(def, atk, alive);
+                if (atk.hp <= 0 && !atk.eliminating) this._eliminate(atk, def, alive);
+            }
+
+            _executeDefense(user, move) {
+                const effects = {
+                    defUp: () => user.boostStat('def', 1),
+                    defUp2: () => user.boostStat('def', 2),
+                    spDefUp: () => user.boostStat('spDef', 1),
+                    spDefUp2: () => user.boostStat('spDef', 2),
+                    shield: () => user.shieldTimer = 1500,
+                    heal: () => user.heal(0.4),
+                    evasionUp: () => user.boostStat('spd', 1),
+                };
+                (effects[move.effect] || (() => user.boostStat('def', 1)))();
+            }
+
+            _executeEnhance(user, target, move) {
+                const boosts = {
+                    atkUp: () => user.boostStat('atk', 1),
+                    atkUp2: () => user.boostStat('atk', 2),
+                    spAtkUp2: () => user.boostStat('spAtk', 2),
+                    spdUp2: () => user.boostStat('spd', 2),
+                    atkSpdUp: () => { user.boostStat('atk', 1); user.boostStat('spd', 1); },
+                    atkDefUp: () => { user.boostStat('atk', 1); user.boostStat('def', 1); },
+                    atkSpAtkUp: () => { user.boostStat('atk', 1); user.boostStat('spAtk', 1); },
+                    spAtkSpDefUp: () => { user.boostStat('spAtk', 1); user.boostStat('spDef', 1); },
+                    critUp: () => user.boostStat('atk', 1),
+                    atkDown: () => target.boostStat('atk', -1),
+                    defDown: () => target.boostStat('def', -1),
+                    defDown2: () => target.boostStat('def', -2),
+                    allBoost: () => { for (const s of ['atk','def','spAtk','spDef','spd']) user.boostStat(s, 1); },
+                };
+                (boosts[move.effect] || (() => user.boostStat('atk', 1)))();
+            }
+
+            _executeStatus(user, target, move) {
+                if (Math.random() > 0.75 || target.statusEffect) return;
+                const map = {
+                    sleep: ['sleep', 4000], paralyze: ['paralyze', 6000], poison: ['poison', 8000],
+                    toxic: ['toxic', 10000], confuse: ['confuse', 4000], burn: ['burn', 8000],
+                    freeze: ['freeze', 5000], leechSeed: ['poison', 6000],
+                    speedDown: [null, 0], accDown: [null, 0],
+                };
+                const s = map[move.effect];
+                if (s && s[0]) { target.statusEffect = s[0]; target.statusTimer = s[1]; }
+                if (move.effect === 'paralyze' || move.effect === 'speedDown' || move.effect === 'accDown')
+                    target.boostStat('spd', -1);
+            }
+
+            _checkLethal(target, attacker, alive) {
+                if (target.hp <= 0) {
+                    if (target.focusSash) {
+                        target.hp = 1; target.focusSash = false;
+                    } else {
+                        this._eliminate(target, attacker, alive);
+                    }
+                }
+            }
+
+            _eliminate(eliminated, eliminator, alive) {
+                if (eliminated.eliminating) return;
+                eliminated.hp = 0;
+                eliminated.alive = false;
+                eliminated.eliminating = true;
+                const remaining = alive.filter(p => p.alive && !p.eliminating).length;
+                eliminated.placement = remaining + 1;
+                this.elimOrder.push(eliminated.originalId);
+                if (eliminator && eliminator.alive && !eliminator.eliminating) {
+                    eliminator.target = null;
+                    eliminator.heal(HEAL_PERCENT);
+                    eliminator.combatCooldown = 500;
+                    for (const stat in eliminator.statMods) eliminator.statMods[stat] = Math.round(eliminator.statMods[stat] * 0.7);
+                    eliminator.killCount++;
+                    eliminator.stats.kills++;
+                    if (eliminator.canEvolve()) {
+                        const chain = EVOLUTION_CHAINS[eliminator.id];
+                        const evoData = POKEMON_DATA.find(p => p.id === chain.nextId);
+                        if (evoData) eliminator.evolve(evoData);
+                    }
+                }
+            }
+        }
+
+        // =========== RUN SIMULATION ===========
+        const GAMES = 100;
+        const ROSTER_SIZE = 50;
+        const statusEl = document.getElementById('status');
+        const progressEl = document.getElementById('progress-fill');
+        const resultsEl = document.getElementById('results');
+
+        // Stats accumulators per Pokemon (by originalId)
+        const pokemonStats = {};
+        for (const d of POKEMON_DATA) {
+            pokemonStats[d.id] = {
+                name: d.name, id: d.id, types: d.types,
+                baseStatTotal: d.stats.hp + d.stats.attack + d.stats.defense + d.stats.spAtk + d.stats.spDef + d.stats.speed,
+                wins: 0, appearances: 0,
+                totalKills: 0, totalDamageDealt: 0, totalDamageTaken: 0,
+                totalPlacement: 0, totalMovesUsed: 0,
+                top3: 0, top5: 0, top10: 0,
+                evolutions: 0,
+                placements: [],
+            };
+        }
+
+        // Type win tracking
+        const typeWins = {};
+        const typeAppearances = {};
+
+        async function runSimulation() {
+            for (let game = 0; game < GAMES; game++) {
+                statusEl.textContent = `Running game ${game + 1} / ${GAMES}...`;
+                progressEl.style.width = `${((game + 1) / GAMES) * 100}%`;
+
+                // Random roster
+                const shuffled = [...POKEMON_DATA].sort(() => Math.random() - 0.5);
+                const roster = shuffled.slice(0, ROSTER_SIZE);
+                const pokemons = roster.map(d => new SimPokemon(d));
+
+                const battle = new SimBattle();
+                const winner = battle.run(pokemons);
+
+                // Collect stats
+                for (const p of pokemons) {
+                    const s = pokemonStats[p.originalId];
+                    s.appearances++;
+                    s.totalKills += p.stats.kills;
+                    s.totalDamageDealt += p.stats.damageDealt;
+                    s.totalDamageTaken += p.stats.damageTaken;
+                    s.totalMovesUsed += p.stats.movesUsed;
+                    s.totalPlacement += p.placement || ROSTER_SIZE;
+                    s.placements.push(p.placement || ROSTER_SIZE);
+                    if (p.evolved) s.evolutions++;
+                    if (p.placement <= 3) s.top3++;
+                    if (p.placement <= 5) s.top5++;
+                    if (p.placement <= 10) s.top10++;
+
+                    // Type tracking
+                    for (const t of p.types) {
+                        typeAppearances[t] = (typeAppearances[t] || 0) + 1;
+                    }
+                }
+
+                if (winner) {
+                    pokemonStats[winner.originalId].wins++;
+                    for (const t of winner.types) {
+                        typeWins[t] = (typeWins[t] || 0) + 1;
+                    }
+                }
+
+                // Yield to browser every 5 games
+                if (game % 5 === 0) await new Promise(r => setTimeout(r, 0));
+            }
+
+            displayResults();
+        }
+
+        function displayResults() {
+            statusEl.textContent = `Simulation complete! ${GAMES} games with ${ROSTER_SIZE} Pokemon each.`;
+
+            const allStats = Object.values(pokemonStats).filter(s => s.appearances > 0);
+            allStats.sort((a, b) => b.wins - a.wins || (a.totalPlacement / a.appearances) - (b.totalPlacement / b.appearances));
+
+            let output = '';
+
+            // === WIN RATE TABLE ===
+            output += '═══════════════════════════════════════════════════════════════════════════════\n';
+            output += '  OVERALL WIN RATES (sorted by wins, then avg placement)\n';
+            output += '═══════════════════════════════════════════════════════════════════════════════\n';
+            output += `${'#'.padStart(3)} ${'Pokemon'.padEnd(14)} ${'Type'.padEnd(18)} ${'BST'.padStart(4)} ${'Apps'.padStart(4)} ${'Wins'.padStart(4)} ${'WR%'.padStart(6)} ${'AvgPl'.padStart(6)} ${'Top3'.padStart(5)} ${'Top10'.padStart(5)} ${'AvgKil'.padStart(6)} ${'AvgDmg'.padStart(7)}\n`;
+            output += '───────────────────────────────────────────────────────────────────────────────\n';
+
+            allStats.forEach((s, i) => {
+                const wr = s.appearances > 0 ? ((s.wins / s.appearances) * 100).toFixed(1) : '0.0';
+                const avgPl = s.appearances > 0 ? (s.totalPlacement / s.appearances).toFixed(1) : '-';
+                const avgKills = s.appearances > 0 ? (s.totalKills / s.appearances).toFixed(1) : '0';
+                const avgDmg = s.appearances > 0 ? Math.round(s.totalDamageDealt / s.appearances) : 0;
+                output += `${(i+1+'').padStart(3)} ${s.name.padEnd(14)} ${s.types.join('/').padEnd(18)} ${(s.baseStatTotal+'').padStart(4)} ${(s.appearances+'').padStart(4)} ${(s.wins+'').padStart(4)} ${wr.padStart(6)} ${avgPl.padStart(6)} ${(s.top3+'').padStart(5)} ${(s.top10+'').padStart(5)} ${avgKills.padStart(6)} ${(avgDmg+'').padStart(7)}\n`;
+            });
+
+            // === TOP 20 MOST DOMINANT ===
+            output += '\n═══════════════════════════════════════════════════════════════════════════════\n';
+            output += '  TOP 20 MOST DOMINANT (by win rate, min 10 appearances)\n';
+            output += '═══════════════════════════════════════════════════════════════════════════════\n';
+            const dominant = allStats.filter(s => s.appearances >= 10)
+                .sort((a, b) => (b.wins/b.appearances) - (a.wins/a.appearances));
+            dominant.slice(0, 20).forEach((s, i) => {
+                const wr = ((s.wins / s.appearances) * 100).toFixed(1);
+                const avgPl = (s.totalPlacement / s.appearances).toFixed(1);
+                const avgK = (s.totalKills / s.appearances).toFixed(1);
+                output += `  ${(i+1+'').padStart(2)}. ${s.name.padEnd(14)} WR: ${wr.padStart(5)}%  AvgPlace: ${avgPl.padStart(5)}  AvgKills: ${avgK.padStart(4)}  BST: ${s.baseStatTotal}  (${s.appearances} games)\n`;
+            });
+
+            // === BOTTOM 20 WEAKEST ===
+            output += '\n═══════════════════════════════════════════════════════════════════════════════\n';
+            output += '  BOTTOM 20 WEAKEST (by avg placement, min 10 appearances)\n';
+            output += '═══════════════════════════════════════════════════════════════════════════════\n';
+            const weakest = allStats.filter(s => s.appearances >= 10)
+                .sort((a, b) => (b.totalPlacement/b.appearances) - (a.totalPlacement/a.appearances));
+            weakest.slice(0, 20).forEach((s, i) => {
+                const wr = ((s.wins / s.appearances) * 100).toFixed(1);
+                const avgPl = (s.totalPlacement / s.appearances).toFixed(1);
+                const avgK = (s.totalKills / s.appearances).toFixed(1);
+                output += `  ${(i+1+'').padStart(2)}. ${s.name.padEnd(14)} WR: ${wr.padStart(5)}%  AvgPlace: ${avgPl.padStart(5)}  AvgKills: ${avgK.padStart(4)}  BST: ${s.baseStatTotal}  (${s.appearances} games)\n`;
+            });
+
+            // === TYPE ANALYSIS ===
+            output += '\n═══════════════════════════════════════════════════════════════════════════════\n';
+            output += '  TYPE WIN RATES\n';
+            output += '═══════════════════════════════════════════════════════════════════════════════\n';
+            const typeStats = Object.keys(typeAppearances).map(t => ({
+                type: t,
+                appearances: typeAppearances[t],
+                wins: typeWins[t] || 0,
+                wr: ((typeWins[t] || 0) / typeAppearances[t] * 100).toFixed(1),
+            })).sort((a, b) => b.wr - a.wr);
+
+            for (const t of typeStats) {
+                const bar = '█'.repeat(Math.round(t.wr * 2));
+                output += `  ${t.type.padEnd(10)} ${t.wr.padStart(5)}% WR  (${t.wins}/${t.appearances} wins/apps)  ${bar}\n`;
+            }
+
+            // === EVOLUTION IMPACT ===
+            output += '\n═══════════════════════════════════════════════════════════════════════════════\n';
+            output += '  EVOLUTION ANALYSIS (Pokemon that evolved at least once)\n';
+            output += '═══════════════════════════════════════════════════════════════════════════════\n';
+            const evolvers = allStats.filter(s => s.evolutions > 0)
+                .sort((a, b) => (b.evolutions/b.appearances) - (a.evolutions/a.appearances));
+            for (const s of evolvers) {
+                const evoRate = ((s.evolutions / s.appearances) * 100).toFixed(0);
+                const wr = ((s.wins / s.appearances) * 100).toFixed(1);
+                output += `  ${s.name.padEnd(14)} Evolved ${evoRate.padStart(3)}% of games  WR: ${wr.padStart(5)}%  AvgKills: ${(s.totalKills/s.appearances).toFixed(1).padStart(4)}\n`;
+            }
+
+            // === BALANCE SUMMARY ===
+            output += '\n═══════════════════════════════════════════════════════════════════════════════\n';
+            output += '  BALANCE SUMMARY\n';
+            output += '═══════════════════════════════════════════════════════════════════════════════\n';
+
+            const withEnoughGames = allStats.filter(s => s.appearances >= 10);
+            const avgWR = 100 / ROSTER_SIZE; // Expected: 2% for 50 roster
+            const wrValues = withEnoughGames.map(s => (s.wins/s.appearances)*100);
+            const maxWR = Math.max(...wrValues);
+            const minWR = Math.min(...wrValues);
+            const stdDev = Math.sqrt(wrValues.reduce((sum, v) => sum + (v - avgWR) ** 2, 0) / wrValues.length);
+
+            const topPoke = withEnoughGames.sort((a,b) => (b.wins/b.appearances) - (a.wins/a.appearances))[0];
+            const botPoke = withEnoughGames.sort((a,b) => (a.wins/a.appearances) - (b.wins/b.appearances))[0];
+
+            output += `  Expected WR per Pokemon: ${avgWR.toFixed(1)}%\n`;
+            output += `  WR Standard Deviation:   ${stdDev.toFixed(2)}%\n`;
+            output += `  WR Range:                ${minWR.toFixed(1)}% - ${maxWR.toFixed(1)}%\n`;
+            output += `  Most OP:                 ${topPoke.name} (${((topPoke.wins/topPoke.appearances)*100).toFixed(1)}% WR, BST ${topPoke.baseStatTotal})\n`;
+            output += `  Most Underpowered:       ${botPoke.name} (${((botPoke.wins/botPoke.appearances)*100).toFixed(1)}% WR, BST ${botPoke.baseStatTotal})\n`;
+
+            // BST correlation
+            const bstGroups = [
+                { label: 'BST < 350 (weak)', filter: s => s.baseStatTotal < 350 },
+                { label: 'BST 350-449',      filter: s => s.baseStatTotal >= 350 && s.baseStatTotal < 450 },
+                { label: 'BST 450-524',      filter: s => s.baseStatTotal >= 450 && s.baseStatTotal < 525 },
+                { label: 'BST 525+ (strong)', filter: s => s.baseStatTotal >= 525 },
+            ];
+            output += '\n  Win Rate by Base Stat Total:\n';
+            for (const g of bstGroups) {
+                const group = withEnoughGames.filter(g.filter);
+                if (group.length === 0) continue;
+                const totalWins = group.reduce((s, p) => s + p.wins, 0);
+                const totalApps = group.reduce((s, p) => s + p.appearances, 0);
+                const groupWR = totalApps > 0 ? ((totalWins / totalApps) * 100).toFixed(1) : '0.0';
+                const avgKills = (group.reduce((s, p) => s + p.totalKills, 0) / totalApps).toFixed(1);
+                output += `    ${g.label.padEnd(22)} WR: ${groupWR.padStart(5)}%  AvgKills: ${avgKills}  (${group.length} Pokemon)\n`;
+            }
+
+            output += '\n═══════════════════════════════════════════════════════════════════════════════\n';
+
+            resultsEl.textContent = output;
+
+            // Also expose data globally for further analysis
+            window.simResults = { pokemonStats, typeWins, typeAppearances, allStats };
+        }
+
+        runSimulation();
+    </script>
+</body>
+</html>

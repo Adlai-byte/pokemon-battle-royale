@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Battle Royale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <canvas id="arena"></canvas>
+
+    <!-- Settings Screen Overlay -->
+    <div id="settings-screen" class="overlay">
+        <div class="settings-container">
+            <h1 class="title">Pokemon Battle Royale</h1>
+            <p class="tagline">Watch Pokemon battle in an epic free-for-all!</p>
+
+            <div class="features-list">
+                <div class="feature-item"><span class="feature-icon">⚔️</span> Evolution after kills</div>
+                <div class="feature-item"><span class="feature-icon">🎁</span> Item drops from eliminations</div>
+                <div class="feature-item"><span class="feature-icon">🌩️</span> Dynamic weather events</div>
+                <div class="feature-item"><span class="feature-icon">🎰</span> Predict the winner</div>
+            </div>
+
+            <div class="how-it-works">
+                <div class="step"><span class="step-num">1</span> Choose roster size & speed</div>
+                <div class="step"><span class="step-num">2</span> Predict the winner & watch!</div>
+            </div>
+
+            <div id="prediction-stats" class="prediction-stats"></div>
+            <div id="top-species" class="top-species"></div>
+
+            <div class="setting-group">
+                <label>Mode</label>
+                <div class="roster-buttons" id="mode-buttons">
+                    <button data-mode="normal" class="active">Normal</button>
+                    <button data-mode="tournament">Tournament</button>
+                </div>
+            </div>
+            <div class="setting-group hidden" id="tournament-format-group">
+                <label>Tournament Format</label>
+                <div class="roster-buttons" id="format-buttons">
+                    <button data-rounds="2" class="active">2 Rounds</button>
+                    <button data-rounds="3">3 Rounds</button>
+                </div>
+            </div>
+            <div class="setting-group">
+                <label>Roster Size</label>
+                <div class="roster-buttons" id="roster-buttons">
+                    <button data-count="10">10</button>
+                    <button data-count="25">25</button>
+                    <button data-count="40" class="active">40</button>
+                    <button data-count="60">60</button>
+                    <button data-count="81">All (81)</button>
+                </div>
+            </div>
+            <div class="setting-group">
+                <label>Speed: <span id="speed-label">1.0x</span></label>
+                <input type="range" id="speed-slider" min="0.5" max="3" step="0.1" value="1">
+            </div>
+            <button id="start-btn" class="start-button">Start Battle Royale</button>
+        </div>
+    </div>
+
+    <!-- Battle HUD -->
+    <div id="hud" class="hud-layout hidden">
+        <div class="hud-top">
+            <span id="remaining-count">Remaining: 0 / 0</span>
+            <span id="weather-indicator" class="weather-indicator"></span>
+            <div class="hud-controls">
+                <label>Speed: <span id="hud-speed-label">1.0x</span></label>
+                <input type="range" id="hud-speed-slider" min="0.5" max="3" step="0.1" value="1">
+                <button id="pause-btn">Pause</button>
+                <button id="mute-btn">Mute</button>
+            </div>
+        </div>
+        <div class="hud-main">
+            <div id="leaderboard" class="leaderboard">
+                <div class="leaderboard-header">
+                    <span class="leaderboard-title">Leaderboard</span>
+                    <div class="leaderboard-tabs">
+                        <button class="lb-tab active" data-sort="kills">Kills</button>
+                        <button class="lb-tab" data-sort="damageDealt">DMG</button>
+                        <button class="lb-tab" data-sort="damageTaken">Tanked</button>
+                    </div>
+                </div>
+                <div id="leaderboard-list" class="leaderboard-list"></div>
+            </div>
+            <div class="arena-wrapper">
+                <!-- Canvas will be moved here by JS -->
+            </div>
+            <div id="event-log" class="event-log"></div>
+        </div>
+    </div>
+
+    <!-- Victory Screen Overlay -->
+    <div id="victory-screen" class="overlay hidden">
+        <div class="victory-container">
+            <h1>Winner!</h1>
+            <img id="winner-sprite" src="" alt="Winner">
+            <h2 id="winner-name"></h2>
+            <button id="play-again-btn" class="start-button">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Bracket Screen Overlay -->
+    <div id="bracket-screen" class="overlay hidden">
+        <div class="bracket-container">
+            <h1 class="title" id="bracket-title">Round Results</h1>
+            <div id="bracket-content" class="bracket-content"></div>
+            <button id="bracket-next-btn" class="start-button">Next Round</button>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
