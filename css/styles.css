@@ -960,3 +960,379 @@ input[type="range"] {
     font-size: 0.35rem;
     color: #a0a0c0;
 }
+
+/* =========== Nav Links on Settings =========== */
+.nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.nav-links a {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    color: #a0a0c0;
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 2px solid #333;
+    transition: border-color 0.1s, color 0.1s;
+}
+
+.nav-links a:hover {
+    border-color: #e94560;
+    color: #e94560;
+}
+
+/* =========== Info & Credits Page Shared =========== */
+.page-body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #0a0a14;
+    min-height: 100vh;
+}
+
+.page-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 24px 60px;
+}
+
+.info-page {
+    margin-left: 130px;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.page-title {
+    font-size: 1.25rem;
+    color: #e94560;
+}
+
+.back-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    color: #e94560;
+    text-decoration: none;
+    padding: 8px 16px;
+    border: 3px solid #e94560;
+    background: transparent;
+    transition: background 0.1s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.back-btn:hover {
+    background: #e94560;
+    color: #fff;
+}
+
+/* Section Cards */
+.section-card {
+    background: #1a1a2e;
+    border: 3px solid #333;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+}
+
+.section-card h2 {
+    font-size: 0.8rem;
+    color: #f5a623;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #333;
+}
+
+.section-card h3 {
+    font-size: 0.6rem;
+    color: #e94560;
+    margin: 12px 0 8px;
+}
+
+.section-card p {
+    font-size: 0.5rem;
+    color: #a0a0c0;
+    line-height: 1.8;
+    margin-bottom: 8px;
+}
+
+/* Info Rows */
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-row {
+    display: flex;
+    gap: 12px;
+    padding: 6px 10px;
+    background: #12121e;
+    border: 2px solid #222;
+    align-items: baseline;
+}
+
+.info-label {
+    font-size: 0.45rem;
+    color: #fff;
+    min-width: 100px;
+    flex-shrink: 0;
+    font-weight: bold;
+}
+
+.info-desc {
+    font-size: 0.45rem;
+    color: #a0a0c0;
+    line-height: 1.6;
+}
+
+/* Item label colors */
+.item-oran { color: #4CAF50; }
+.item-sitrus { color: #FFD700; }
+.item-xatk { color: #F44336; }
+.item-xspd { color: #2196F3; }
+.item-sash { color: #FFFFFF; }
+
+/* Type Chart */
+.type-chart-wrapper {
+    overflow-x: auto;
+    margin: 8px 0;
+}
+
+.type-chart-table {
+    border-collapse: collapse;
+    font-size: 0.35rem;
+    width: 100%;
+    min-width: 600px;
+}
+
+.type-chart-table th,
+.type-chart-table td {
+    width: 28px;
+    height: 22px;
+    text-align: center;
+    border: 1px solid #333;
+    padding: 2px;
+}
+
+.type-chart-table thead th {
+    background: #12121e;
+    color: #ccc;
+    font-weight: bold;
+    font-size: 0.3rem;
+}
+
+.type-corner {
+    font-size: 0.25rem !important;
+    color: #888 !important;
+}
+
+.tc-super {
+    background: #2d5a27;
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.tc-resist {
+    background: #5a2727;
+    color: #e94560;
+    font-weight: bold;
+}
+
+.tc-immune {
+    background: #111;
+    color: #555;
+    font-weight: bold;
+}
+
+.tc-neutral {
+    background: #1a1a2e;
+    color: #333;
+}
+
+/* Ability Grid */
+.ability-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+}
+
+.ability-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    background: #12121e;
+    border: 2px solid #222;
+}
+
+.ability-name {
+    font-size: 0.45rem;
+    color: #f5a623;
+    font-weight: bold;
+}
+
+.ability-desc {
+    font-size: 0.4rem;
+    color: #a0a0c0;
+    line-height: 1.6;
+}
+
+/* Evolution Chains */
+.evo-chains {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.evo-chain {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: #12121e;
+    border: 2px solid #222;
+    flex-wrap: wrap;
+}
+
+.evo-stage {
+    font-size: 0.45rem;
+    color: #ccc;
+    padding: 2px 6px;
+    background: #0a0a14;
+    border: 2px solid #333;
+}
+
+.evo-final {
+    border-color: #f5a623;
+    color: #f5a623;
+}
+
+.evo-arrow {
+    font-size: 0.35rem;
+    color: #e94560;
+}
+
+/* Nav Sidebar (info page) */
+.nav-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 120px;
+    height: 100%;
+    background: #12121e;
+    border-right: 3px solid #333;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.nav-link {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.4rem;
+    color: #888;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-left: 3px solid transparent;
+    transition: color 0.1s, border-color 0.1s;
+    line-height: 1.6;
+}
+
+.nav-link:hover {
+    color: #ccc;
+    border-left-color: #e94560;
+}
+
+.nav-link.active {
+    color: #e94560;
+    border-left-color: #e94560;
+    background: rgba(233, 69, 96, 0.1);
+}
+
+/* Credits Page */
+.credits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.credit-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px 20px;
+    background: #1a1a2e;
+    border: 3px solid #333;
+}
+
+.credit-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.credit-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.credit-name {
+    font-size: 0.6rem;
+    color: #f5a623;
+}
+
+.credit-desc {
+    font-size: 0.45rem;
+    color: #ccc;
+    line-height: 1.6;
+}
+
+.credit-link {
+    font-size: 0.4rem;
+    color: #a0a0c0;
+    line-height: 1.6;
+}
+
+.credits-disclaimer {
+    font-size: 0.35rem;
+    color: #555;
+    text-align: center;
+    margin-top: 24px;
+    line-height: 1.8;
+}
+
+/* Responsive: collapse sidebar on small screens */
+@media (max-width: 768px) {
+    .nav-sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        border-right: none;
+        border-bottom: 3px solid #333;
+        padding: 8px;
+    }
+    .nav-link {
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        padding: 6px 8px;
+    }
+    .nav-link:hover, .nav-link.active {
+        border-left: none;
+        border-bottom-color: #e94560;
+    }
+    .info-page {
+        margin-left: 0;
+    }
+    .ability-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Guide - Pokemon Battle Royale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="page-body">
+    <nav class="nav-sidebar">
+        <a href="#how-to-play" class="nav-link">How to Play</a>
+        <a href="#stats" class="nav-link">Stats</a>
+        <a href="#types" class="nav-link">Types</a>
+        <a href="#abilities" class="nav-link">Abilities</a>
+        <a href="#weather" class="nav-link">Weather</a>
+        <a href="#items" class="nav-link">Items</a>
+        <a href="#arena-events" class="nav-link">Events</a>
+        <a href="#evolution" class="nav-link">Evolution</a>
+        <a href="#storm" class="nav-link">Storm</a>
+        <a href="#tournament" class="nav-link">Tournament</a>
+    </nav>
+
+    <div class="page-container info-page">
+        <div class="page-header">
+            <a href="index.html" class="back-btn">Back to Game</a>
+            <h1 class="page-title">Game Guide</h1>
+        </div>
+
+        <!-- How to Play -->
+        <div class="section-card" id="how-to-play">
+            <h2>How to Play</h2>
+            <p>Pokemon Battle Royale is an auto-battler where Gen 1 Pokemon fight in a free-for-all arena until one remains. Choose your roster size, predict a winner, and watch the chaos unfold.</p>
+            <p>Pokemon move automatically, targeting the nearest opponent. They use auto-attacks to build energy, then unleash special moves when their energy bar is full. Eliminating opponents earns kills, which trigger evolution and item drops.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="section-card" id="stats">
+            <h2>Pokemon Stats</h2>
+            <p>Each Pokemon has 6 base stats from the original games:</p>
+            <div class="stats-list">
+                <div class="info-row"><span class="info-label">HP</span><span class="info-desc">Hit Points — determines max health</span></div>
+                <div class="info-row"><span class="info-label">Attack</span><span class="info-desc">Physical attack power</span></div>
+                <div class="info-row"><span class="info-label">Defense</span><span class="info-desc">Physical damage reduction</span></div>
+                <div class="info-row"><span class="info-label">Sp.Atk</span><span class="info-desc">Special attack power</span></div>
+                <div class="info-row"><span class="info-label">Sp.Def</span><span class="info-desc">Special damage reduction</span></div>
+                <div class="info-row"><span class="info-label">Speed</span><span class="info-desc">Movement speed and attack frequency</span></div>
+            </div>
+            <h3>BST Scaling</h3>
+            <p>To keep battles competitive, stats are scaled based on Base Stat Total (BST):</p>
+            <div class="stats-list">
+                <div class="info-row tier-row"><span class="info-label">BST 600+</span><span class="info-desc">0.88x — Nerfed (Legendaries)</span></div>
+                <div class="info-row tier-row"><span class="info-label">BST 525+</span><span class="info-desc">0.94x — Slightly nerfed</span></div>
+                <div class="info-row tier-row"><span class="info-label">BST 450+</span><span class="info-desc">1.00x — Baseline</span></div>
+                <div class="info-row tier-row"><span class="info-label">BST 350+</span><span class="info-desc">1.10x — Small buff</span></div>
+                <div class="info-row tier-row"><span class="info-label">BST 280+</span><span class="info-desc">1.20x — Moderate buff</span></div>
+                <div class="info-row tier-row"><span class="info-label">BST &lt;280</span><span class="info-desc">1.30x — Big buff (Magikarp tier)</span></div>
+            </div>
+        </div>
+
+        <!-- Type Effectiveness -->
+        <div class="section-card" id="types">
+            <h2>Type Effectiveness</h2>
+            <p>18 types interact in a rock-paper-scissors system. Green = super effective (2x), red = not very effective (0.5x), black = immune (0x), gray = neutral (1x).</p>
+            <div class="type-chart-wrapper">
+                <table class="type-chart-table">
+                    <thead>
+                        <tr>
+                            <th class="type-corner">ATK\DEF</th>
+                            <th>NOR</th><th>FIR</th><th>WAT</th><th>ELE</th><th>GRA</th><th>ICE</th>
+                            <th>FIG</th><th>POI</th><th>GRO</th><th>FLY</th><th>PSY</th><th>BUG</th>
+                            <th>ROC</th><th>GHO</th><th>DRA</th><th>DAR</th><th>STE</th><th>FAI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="type-chart-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Abilities -->
+        <div class="section-card" id="abilities">
+            <h2>Abilities</h2>
+            <p>Each Pokemon has one ability that provides a passive effect during battle.</p>
+            <div class="ability-grid">
+                <div class="ability-card"><span class="ability-name">Overgrow</span><span class="ability-desc">+50% Grass damage below 33% HP</span></div>
+                <div class="ability-card"><span class="ability-name">Blaze</span><span class="ability-desc">+50% Fire damage below 33% HP</span></div>
+                <div class="ability-card"><span class="ability-name">Torrent</span><span class="ability-desc">+50% Water damage below 33% HP</span></div>
+                <div class="ability-card"><span class="ability-name">Guts</span><span class="ability-desc">+50% physical damage when statused</span></div>
+                <div class="ability-card"><span class="ability-name">Adaptability</span><span class="ability-desc">STAB is 2x instead of 1.5x</span></div>
+                <div class="ability-card"><span class="ability-name">Technician</span><span class="ability-desc">Moves with power &lt;=60 deal 1.5x</span></div>
+                <div class="ability-card"><span class="ability-name">Hyper Cutter</span><span class="ability-desc">Attack cannot be lowered</span></div>
+                <div class="ability-card"><span class="ability-name">Static</span><span class="ability-desc">30% chance to paralyze attacker</span></div>
+                <div class="ability-card"><span class="ability-name">Poison Point</span><span class="ability-desc">30% chance to poison attacker</span></div>
+                <div class="ability-card"><span class="ability-name">Flame Body</span><span class="ability-desc">30% chance to burn attacker</span></div>
+                <div class="ability-card"><span class="ability-name">Levitate</span><span class="ability-desc">Immune to Ground damage</span></div>
+                <div class="ability-card"><span class="ability-name">Flash Fire</span><span class="ability-desc">Immune to Fire; boosts own Fire damage</span></div>
+                <div class="ability-card"><span class="ability-name">Water Absorb</span><span class="ability-desc">Immune to Water; heals instead</span></div>
+                <div class="ability-card"><span class="ability-name">Volt Absorb</span><span class="ability-desc">Immune to Electric; heals instead</span></div>
+                <div class="ability-card"><span class="ability-name">Damp</span><span class="ability-desc">Nullifies self-destruct moves nearby</span></div>
+                <div class="ability-card"><span class="ability-name">Soundproof</span><span class="ability-desc">50% chance to resist status moves</span></div>
+                <div class="ability-card"><span class="ability-name">Thick Fat</span><span class="ability-desc">Halves Fire and Ice damage taken</span></div>
+                <div class="ability-card"><span class="ability-name">Shell Armor</span><span class="ability-desc">Cannot be critically hit</span></div>
+                <div class="ability-card"><span class="ability-name">Sturdy</span><span class="ability-desc">Survives first lethal hit at 1 HP</span></div>
+                <div class="ability-card"><span class="ability-name">Marvel Scale</span><span class="ability-desc">+50% defense when statused</span></div>
+                <div class="ability-card"><span class="ability-name">Magic Guard</span><span class="ability-desc">Immune to DOT damage</span></div>
+                <div class="ability-card"><span class="ability-name">Sand Veil</span><span class="ability-desc">10% dodge chance</span></div>
+                <div class="ability-card"><span class="ability-name">Insomnia</span><span class="ability-desc">Immune to sleep</span></div>
+                <div class="ability-card"><span class="ability-name">Limber</span><span class="ability-desc">Immune to paralysis</span></div>
+                <div class="ability-card"><span class="ability-name">Own Tempo</span><span class="ability-desc">Immune to confusion</span></div>
+                <div class="ability-card"><span class="ability-name">Oblivious</span><span class="ability-desc">Immune to confusion and sleep</span></div>
+                <div class="ability-card"><span class="ability-name">Natural Cure</span><span class="ability-desc">Cures status below 50% HP</span></div>
+                <div class="ability-card"><span class="ability-name">Chlorophyll</span><span class="ability-desc">Double speed in sun</span></div>
+                <div class="ability-card"><span class="ability-name">Swift Swim</span><span class="ability-desc">Double speed in rain</span></div>
+                <div class="ability-card"><span class="ability-name">Intimidate</span><span class="ability-desc">Lowers nearby Attack on entry</span></div>
+                <div class="ability-card"><span class="ability-name">Synchronize</span><span class="ability-desc">Mirrors status back to attacker</span></div>
+                <div class="ability-card"><span class="ability-name">Pressure</span><span class="ability-desc">Enemies attack 20% slower</span></div>
+                <div class="ability-card"><span class="ability-name">Keen Eye</span><span class="ability-desc">Immune to accuracy debuffs</span></div>
+                <div class="ability-card"><span class="ability-name">Inner Focus</span><span class="ability-desc">Immune to confusion; +10% energy</span></div>
+                <div class="ability-card"><span class="ability-name">Arena Trap</span><span class="ability-desc">Lowers nearby Speed on entry</span></div>
+                <div class="ability-card"><span class="ability-name">Sticky Hold</span><span class="ability-desc">Stats cannot be lowered</span></div>
+                <div class="ability-card"><span class="ability-name">Scrappy</span><span class="ability-desc">Normal/Fighting hit Ghost types</span></div>
+                <div class="ability-card"><span class="ability-name">Rock Head</span><span class="ability-desc">No recoil damage</span></div>
+                <div class="ability-card"><span class="ability-name">Compound Eyes</span><span class="ability-desc">Status moves always land</span></div>
+                <div class="ability-card"><span class="ability-name">Imposter</span><span class="ability-desc">Copies first target's types &amp; stats</span></div>
+            </div>
+        </div>
+
+        <!-- Weather -->
+        <div class="section-card" id="weather">
+            <h2>Weather</h2>
+            <p>Weather changes randomly every 30-60 seconds, affecting all Pokemon in the arena.</p>
+            <div class="stats-list">
+                <div class="info-row weather-row"><span class="info-label">Clear</span><span class="info-desc">No effect</span></div>
+                <div class="info-row weather-row"><span class="info-label">Rain</span><span class="info-desc">+30% Water damage, -30% Fire damage</span></div>
+                <div class="info-row weather-row"><span class="info-label">Sun</span><span class="info-desc">+30% Fire damage, -30% Water damage</span></div>
+                <div class="info-row weather-row"><span class="info-label">Sandstorm</span><span class="info-desc">2% HP/tick to non-Rock/Ground/Steel</span></div>
+                <div class="info-row weather-row"><span class="info-label">Hail</span><span class="info-desc">2% HP/tick to non-Ice types</span></div>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div class="section-card" id="items">
+            <h2>Items</h2>
+            <p>Items drop on 70% of eliminations. They last 10 seconds and magnetically attract to nearby Pokemon (200px range).</p>
+            <div class="stats-list">
+                <div class="info-row item-row"><span class="info-label item-oran">Oran Berry</span><span class="info-desc">Heals 20% HP (40% drop weight)</span></div>
+                <div class="info-row item-row"><span class="info-label item-sitrus">Sitrus Berry</span><span class="info-desc">Heals 40% HP (25% drop weight)</span></div>
+                <div class="info-row item-row"><span class="info-label item-xatk">X Attack</span><span class="info-desc">+2 Attack stages (15% drop weight)</span></div>
+                <div class="info-row item-row"><span class="info-label item-xspd">X Speed</span><span class="info-desc">+2 Speed stages (12% drop weight)</span></div>
+                <div class="info-row item-row"><span class="info-label item-sash">Focus Sash</span><span class="info-desc">Survive one lethal hit at 1 HP (8% drop weight)</span></div>
+            </div>
+        </div>
+
+        <!-- Arena Events -->
+        <div class="section-card" id="arena-events">
+            <h2>Arena Events</h2>
+            <p>Random events fire every 20-40 seconds, adding chaos to the battlefield.</p>
+            <div class="stats-list">
+                <div class="info-row event-row"><span class="info-label">Meteor Strike</span><span class="info-desc">35% chance — AOE 15% maxHP damage in 120px radius</span></div>
+                <div class="info-row event-row"><span class="info-label">Lightning Bolt</span><span class="info-desc">30% chance — Hits random Pokemon for 12% maxHP</span></div>
+                <div class="info-row event-row"><span class="info-label">Healing Zone</span><span class="info-desc">35% chance — Heals 5% HP/sec for 8 seconds in 100px radius</span></div>
+            </div>
+        </div>
+
+        <!-- Evolution -->
+        <div class="section-card" id="evolution">
+            <h2>Evolution</h2>
+            <p>Pokemon evolve by getting kills. First evolution at 1 kill, second evolution at 3 total kills. Evolution restores stats and grants 30 energy.</p>
+            <h3>Evolution Chains</h3>
+            <div class="evo-chains">
+                <div class="evo-chain"><span class="evo-stage">Bulbasaur</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Ivysaur</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Venusaur</span></div>
+                <div class="evo-chain"><span class="evo-stage">Charmander</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Charmeleon</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Charizard</span></div>
+                <div class="evo-chain"><span class="evo-stage">Squirtle</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Wartortle</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Blastoise</span></div>
+                <div class="evo-chain"><span class="evo-stage">Caterpie</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Metapod</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Butterfree</span></div>
+                <div class="evo-chain"><span class="evo-stage">Weedle</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Kakuna</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Beedrill</span></div>
+                <div class="evo-chain"><span class="evo-stage">Pidgey</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Pidgeotto</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Pidgeot</span></div>
+                <div class="evo-chain"><span class="evo-stage">Rattata</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Raticate</span></div>
+                <div class="evo-chain"><span class="evo-stage">Spearow</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Fearow</span></div>
+                <div class="evo-chain"><span class="evo-stage">Ekans</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Arbok</span></div>
+                <div class="evo-chain"><span class="evo-stage">Pikachu</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Raichu</span></div>
+                <div class="evo-chain"><span class="evo-stage">Sandshrew</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Sandslash</span></div>
+                <div class="evo-chain"><span class="evo-stage">Nidoran F</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Nidorina</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Nidoqueen</span></div>
+                <div class="evo-chain"><span class="evo-stage">Nidoran M</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Nidorino</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Nidoking</span></div>
+                <div class="evo-chain"><span class="evo-stage">Clefairy</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Clefable</span></div>
+                <div class="evo-chain"><span class="evo-stage">Vulpix</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Ninetales</span></div>
+                <div class="evo-chain"><span class="evo-stage">Jigglypuff</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Wigglytuff</span></div>
+                <div class="evo-chain"><span class="evo-stage">Zubat</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Golbat</span></div>
+                <div class="evo-chain"><span class="evo-stage">Oddish</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Gloom</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Vileplume</span></div>
+                <div class="evo-chain"><span class="evo-stage">Paras</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Parasect</span></div>
+                <div class="evo-chain"><span class="evo-stage">Venonat</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Venomoth</span></div>
+                <div class="evo-chain"><span class="evo-stage">Diglett</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Dugtrio</span></div>
+                <div class="evo-chain"><span class="evo-stage">Meowth</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Persian</span></div>
+                <div class="evo-chain"><span class="evo-stage">Psyduck</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Golduck</span></div>
+                <div class="evo-chain"><span class="evo-stage">Mankey</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Primeape</span></div>
+                <div class="evo-chain"><span class="evo-stage">Growlithe</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Arcanine</span></div>
+                <div class="evo-chain"><span class="evo-stage">Poliwag</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Poliwhirl</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Poliwrath</span></div>
+                <div class="evo-chain"><span class="evo-stage">Abra</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Kadabra</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Alakazam</span></div>
+                <div class="evo-chain"><span class="evo-stage">Machop</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Machoke</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Machamp</span></div>
+                <div class="evo-chain"><span class="evo-stage">Bellsprout</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Weepinbell</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Victreebel</span></div>
+                <div class="evo-chain"><span class="evo-stage">Tentacool</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Tentacruel</span></div>
+                <div class="evo-chain"><span class="evo-stage">Geodude</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Graveler</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Golem</span></div>
+                <div class="evo-chain"><span class="evo-stage">Ponyta</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Rapidash</span></div>
+                <div class="evo-chain"><span class="evo-stage">Slowpoke</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Slowbro</span></div>
+                <div class="evo-chain"><span class="evo-stage">Magnemite</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Magneton</span></div>
+                <div class="evo-chain"><span class="evo-stage">Doduo</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Dodrio</span></div>
+                <div class="evo-chain"><span class="evo-stage">Seel</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Dewgong</span></div>
+                <div class="evo-chain"><span class="evo-stage">Grimer</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Muk</span></div>
+                <div class="evo-chain"><span class="evo-stage">Shellder</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Cloyster</span></div>
+                <div class="evo-chain"><span class="evo-stage">Gastly</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Haunter</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Gengar</span></div>
+                <div class="evo-chain"><span class="evo-stage">Drowzee</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Hypno</span></div>
+                <div class="evo-chain"><span class="evo-stage">Krabby</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Kingler</span></div>
+                <div class="evo-chain"><span class="evo-stage">Voltorb</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Electrode</span></div>
+                <div class="evo-chain"><span class="evo-stage">Exeggcute</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Exeggutor</span></div>
+                <div class="evo-chain"><span class="evo-stage">Cubone</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Marowak</span></div>
+                <div class="evo-chain"><span class="evo-stage">Koffing</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Weezing</span></div>
+                <div class="evo-chain"><span class="evo-stage">Rhyhorn</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Rhydon</span></div>
+                <div class="evo-chain"><span class="evo-stage">Horsea</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Seadra</span></div>
+                <div class="evo-chain"><span class="evo-stage">Goldeen</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Seaking</span></div>
+                <div class="evo-chain"><span class="evo-stage">Staryu</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Starmie</span></div>
+                <div class="evo-chain"><span class="evo-stage">Magikarp</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Gyarados</span></div>
+                <div class="evo-chain"><span class="evo-stage">Eevee</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Vaporeon</span></div>
+                <div class="evo-chain"><span class="evo-stage">Omanyte</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Omastar</span></div>
+                <div class="evo-chain"><span class="evo-stage">Kabuto</span><span class="evo-arrow">1 kill</span><span class="evo-stage evo-final">Kabutops</span></div>
+                <div class="evo-chain"><span class="evo-stage">Dratini</span><span class="evo-arrow">1 kill</span><span class="evo-stage">Dragonair</span><span class="evo-arrow">3 kills</span><span class="evo-stage evo-final">Dragonite</span></div>
+            </div>
+        </div>
+
+        <!-- Storm Circle -->
+        <div class="section-card" id="storm">
+            <h2>Storm Circle</h2>
+            <p>The arena shrinks as Pokemon are eliminated. The storm circle's radius decreases proportionally to the number of remaining fighters.</p>
+            <p>Pokemon caught outside the circle take 1% maxHP per second as damage and are pushed toward the center. The minimum circle radius is 120px.</p>
+        </div>
+
+        <!-- Tournament Mode -->
+        <div class="section-card" id="tournament">
+            <h2>Tournament Mode</h2>
+            <p>Tournament mode splits the roster into groups that battle in rounds. Top performers from each group advance to the next round.</p>
+            <div class="stats-list">
+                <div class="info-row"><span class="info-label">2 Rounds</span><span class="info-desc">Groups fight in round 1, survivors battle in the finals</span></div>
+                <div class="info-row"><span class="info-label">3 Rounds</span><span class="info-desc">Three elimination rounds with progressively fewer fighters</span></div>
+            </div>
+            <p>Between rounds, a bracket screen shows which Pokemon advanced and which were eliminated.</p>
+        </div>
+    </div>
+
+    <script>
+        // Generate type chart dynamically
+        const TYPES = ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+        const LABELS = ['NOR','FIR','WAT','ELE','GRA','ICE','FIG','POI','GRO','FLY','PSY','BUG','ROC','GHO','DRA','DAR','STE','FAI'];
+        const TYPE_CHART = {
+            normal:{rock:0.5,ghost:0,steel:0.5},
+            fire:{fire:0.5,water:0.5,grass:2,ice:2,bug:2,rock:0.5,dragon:0.5,steel:2},
+            water:{fire:2,water:0.5,grass:0.5,ground:2,rock:2,dragon:0.5},
+            electric:{water:2,electric:0.5,grass:0.5,ground:0,flying:2,dragon:0.5},
+            grass:{fire:0.5,water:2,grass:0.5,poison:0.5,ground:2,flying:0.5,bug:0.5,rock:2,dragon:0.5,steel:0.5},
+            ice:{fire:0.5,water:0.5,grass:2,ice:0.5,ground:2,flying:2,dragon:2,steel:0.5},
+            fighting:{normal:2,ice:2,poison:0.5,flying:0.5,psychic:0.5,bug:0.5,rock:2,ghost:0,dark:2,steel:2,fairy:0.5},
+            poison:{grass:2,poison:0.5,ground:0.5,rock:0.5,ghost:0.5,steel:0,fairy:2},
+            ground:{fire:2,electric:2,grass:0.5,poison:2,flying:0,bug:0.5,rock:2,steel:2},
+            flying:{electric:0.5,grass:2,fighting:2,bug:2,rock:0.5,steel:0.5},
+            psychic:{fighting:2,poison:2,psychic:0.5,dark:0,steel:0.5},
+            bug:{fire:0.5,grass:2,fighting:0.5,poison:0.5,flying:0.5,psychic:2,ghost:0.5,dark:2,steel:0.5,fairy:0.5},
+            rock:{fire:2,ice:2,fighting:0.5,ground:0.5,flying:2,bug:2,steel:0.5},
+            ghost:{normal:0,psychic:2,ghost:2,dark:0.5},
+            dragon:{dragon:2,steel:0.5,fairy:0},
+            dark:{fighting:0.5,psychic:2,ghost:2,dark:0.5,fairy:0.5},
+            steel:{fire:0.5,water:0.5,electric:0.5,ice:2,rock:2,steel:0.5,fairy:2},
+            fairy:{fire:0.5,fighting:2,poison:0.5,dragon:2,dark:2,steel:0.5}
+        };
+
+        const TYPE_COLORS = {
+            normal:'#A8A878',fire:'#F08030',water:'#6890F0',electric:'#F8D030',
+            grass:'#78C850',ice:'#98D8D8',fighting:'#C03028',poison:'#A040A0',
+            ground:'#E0C068',flying:'#A890F0',psychic:'#F85888',bug:'#A8B820',
+            rock:'#B8A038',ghost:'#705898',dragon:'#7038F8',dark:'#705848',
+            steel:'#B8B8D0',fairy:'#EE99AC'
+        };
+
+        const tbody = document.getElementById('type-chart-body');
+        TYPES.forEach((atkType, i) => {
+            const tr = document.createElement('tr');
+            const th = document.createElement('th');
+            th.textContent = LABELS[i];
+            th.style.background = TYPE_COLORS[atkType];
+            th.style.color = '#fff';
+            th.style.textShadow = '1px 1px 0 #000';
+            tr.appendChild(th);
+
+            TYPES.forEach(defType => {
+                const td = document.createElement('td');
+                const mult = (TYPE_CHART[atkType] && TYPE_CHART[atkType][defType]) ?? 1;
+                if (mult === 2) {
+                    td.textContent = '2';
+                    td.className = 'tc-super';
+                } else if (mult === 0.5) {
+                    td.textContent = '.5';
+                    td.className = 'tc-resist';
+                } else if (mult === 0) {
+                    td.textContent = '0';
+                    td.className = 'tc-immune';
+                } else {
+                    td.textContent = '';
+                    td.className = 'tc-neutral';
+                }
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+
+        // Scrollspy for nav sidebar
+        const sections = document.querySelectorAll('.section-card[id]');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    const link = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+                    if (link) link.classList.add('active');
+                }
+            });
+        }, { rootMargin: '-20% 0px -70% 0px' });
+        sections.forEach(s => observer.observe(s));
+    </script>
+</body>
+</html>
