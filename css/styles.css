@@ -70,7 +70,7 @@ canvas#arena {
     outline: 3px solid #333;
     padding: 32px 40px;
     text-align: center;
-    max-width: 550px;
+    max-width: 620px;
     width: 90%;
 }
 
@@ -83,7 +83,7 @@ canvas#arena {
 /* Landing page sections */
 .tagline {
     color: #a0a0c0;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     margin-bottom: 16px;
     line-height: 1.6;
 }
@@ -102,13 +102,13 @@ canvas#arena {
     padding: 6px 8px;
     background: #12121e;
     border: 2px solid #333;
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     color: #ccc;
     line-height: 1.6;
 }
 
 .feature-icon {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
 }
 
 .how-it-works {
@@ -122,7 +122,7 @@ canvas#arena {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     color: #a0a0c0;
     line-height: 1.6;
 }
@@ -131,11 +131,11 @@ canvas#arena {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     background: #e94560;
     color: #fff;
-    font-size: 0.5rem;
+    font-size: 0.6rem;
     font-weight: bold;
     flex-shrink: 0;
 }
@@ -148,7 +148,7 @@ canvas#arena {
 .setting-group label {
     display: block;
     margin-bottom: 8px;
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     color: #a0a0c0;
 }
 
@@ -161,12 +161,12 @@ canvas#arena {
 .roster-buttons button {
     flex: 1;
     min-width: 50px;
-    padding: 8px;
+    padding: 10px;
     border: 3px solid #333;
     background: #0a0a1a;
     color: #fff;
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     cursor: pointer;
     transition: background 0.1s, border-color 0.1s;
 }
@@ -188,8 +188,8 @@ input[type="range"] {
 
 .start-button {
     margin-top: 16px;
-    padding: 12px 32px;
-    font-size: 0.95rem;
+    padding: 14px 36px;
+    font-size: 1.05rem;
     font-weight: bold;
     border: 3px solid #c0392b;
     background: #e94560;
@@ -223,7 +223,7 @@ input[type="range"] {
     padding: 6px 12px;
     background: #0a0a14;
     border-bottom: 3px solid #333;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     flex-shrink: 0;
     z-index: 2;
 }
@@ -235,7 +235,7 @@ input[type="range"] {
 }
 
 .hud-controls label {
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     color: #a0a0c0;
 }
 
@@ -244,13 +244,13 @@ input[type="range"] {
 }
 
 #pause-btn {
-    padding: 4px 12px;
+    padding: 5px 14px;
     border: 2px solid #e94560;
     background: transparent;
     color: #e94560;
     cursor: pointer;
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     transition: background 0.1s;
 }
 
@@ -260,7 +260,7 @@ input[type="range"] {
 }
 
 .weather-indicator {
-    font-size: 0.5rem;
+    font-size: 0.6rem;
     padding: 3px 8px;
     background: #1a1a2e;
     border: 2px solid #333;
@@ -268,13 +268,13 @@ input[type="range"] {
 }
 
 #mute-btn {
-    padding: 4px 12px;
+    padding: 5px 14px;
     border: 2px solid #e94560;
     background: transparent;
     color: #e94560;
     cursor: pointer;
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     transition: background 0.1s;
 }
 
@@ -287,11 +287,11 @@ input[type="range"] {
 
 /* =========== Leaderboard (left panel) =========== */
 .leaderboard {
-    width: 250px;
+    width: 270px;
     flex-shrink: 0;
     background: #0a0a14;
     overflow: hidden;
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     display: flex;
     flex-direction: column;
     border-right: 3px solid #333;
@@ -304,7 +304,7 @@ input[type="range"] {
 }
 
 .leaderboard-title {
-    font-size: 0.5rem;
+    font-size: 0.6rem;
     font-weight: bold;
     color: #f5a623;
 }
@@ -317,12 +317,12 @@ input[type="range"] {
 
 .lb-tab {
     flex: 1;
-    padding: 3px 4px;
+    padding: 4px 5px;
     border: 2px solid #444;
     background: transparent;
     color: #888;
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     cursor: pointer;
     transition: background 0.1s, border-color 0.1s;
 }
@@ -370,11 +370,11 @@ input[type="range"] {
 }
 
 .lb-rank {
-    width: 14px;
+    width: 16px;
     font-weight: bold;
     color: #888;
     text-align: center;
-    font-size: 0.5rem;
+    font-size: 0.6rem;
 }
 
 .lb-row:nth-child(1) .lb-rank { color: #ffd700; }
@@ -382,8 +382,8 @@ input[type="range"] {
 .lb-row:nth-child(3) .lb-rank { color: #cd7f32; }
 
 .lb-sprite {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     image-rendering: pixelated;
 }
 
@@ -393,15 +393,15 @@ input[type="range"] {
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #ddd;
-    font-size: 0.5rem;
+    font-size: 0.6rem;
 }
 
 .lb-value {
     font-weight: bold;
     color: #f5a623;
-    min-width: 28px;
+    min-width: 30px;
     text-align: right;
-    font-size: 0.5rem;
+    font-size: 0.6rem;
 }
 
 .lb-hp-bar {
@@ -426,11 +426,11 @@ input[type="range"] {
 
 /* =========== Event Log (right panel) =========== */
 .event-log {
-    width: 270px;
+    width: 290px;
     flex-shrink: 0;
     overflow-y: auto;
     padding: 6px;
-    font-size: 0.5rem;
+    font-size: 0.6rem;
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -472,7 +472,7 @@ input[type="range"] {
 }
 
 .victory-container h1 {
-    font-size: 2.0rem;
+    font-size: 2.25rem;
     color: #f5a623;
     margin-bottom: 16px;
     animation: blink 1s step-end infinite;
@@ -491,7 +491,7 @@ input[type="range"] {
 }
 
 .victory-container h2 {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     margin-bottom: 24px;
 }
 
@@ -523,14 +523,14 @@ input[type="range"] {
 
 .betting-subtitle {
     color: #a0a0c0;
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     margin-bottom: 16px;
     line-height: 1.6;
 }
 
 .betting-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
     gap: 6px;
     padding: 6px;
     margin-bottom: 16px;
@@ -554,23 +554,23 @@ input[type="range"] {
 }
 
 .betting-card img {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     image-rendering: pixelated;
 }
 
 .betting-name {
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     color: #ccc;
     margin-top: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 76px;
+    max-width: 90px;
 }
 
 .betting-tier {
-    font-size: 0.3rem;
+    font-size: 0.4rem;
     font-weight: bold;
     margin-top: 1px;
 }
@@ -624,7 +624,7 @@ input[type="range"] {
     top: 2px;
     right: 4px;
     color: #4CAF50;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: bold;
 }
 
@@ -656,18 +656,18 @@ input[type="range"] {
 }
 
 .prediction-stats-text {
-    font-size: 0.4rem;
+    font-size: 0.5rem;
     color: #a0a0c0;
     line-height: 1.8;
 }
 
 .prediction-reset-btn {
-    padding: 2px 8px;
+    padding: 3px 10px;
     border: 2px solid #555;
     background: transparent;
     color: #888;
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.35rem;
+    font-size: 0.45rem;
     cursor: pointer;
     transition: background 0.1s, border-color 0.1s;
 }
@@ -679,7 +679,7 @@ input[type="range"] {
 
 /* Victory prediction result */
 .prediction-result {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
     margin-bottom: 12px;
     line-height: 1.8;
 }
@@ -694,7 +694,7 @@ input[type="range"] {
 
 .prediction-skipped {
     color: #888;
-    font-size: 0.5rem;
+    font-size: 0.6rem;
 }
 
 /* =========== Elimination Banner =========== */
@@ -707,7 +707,7 @@ input[type="range"] {
     border: 3px solid #ff4444;
     outline: 3px solid #333;
     padding: 10px 24px;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     z-index: 20;
     animation: bannerSlide 2s ease-out forwards;
     white-space: nowrap;
@@ -761,7 +761,7 @@ input[type="range"] {
     border: 4px solid #f5a623;
     outline: 3px solid #333;
     padding: 12px 28px;
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-family: 'Press Start 2P', monospace;
     z-index: 30;
     white-space: nowrap;
@@ -809,27 +809,27 @@ input[type="range"] {
 }
 
 .stat-icon {
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
 .stat-sprite {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     image-rendering: pixelated;
 }
 
 .stat-label {
-    font-size: 0.4rem;
+    font-size: 0.5rem;
     color: #a0a0c0;
 }
 
 .stat-name {
-    font-size: 0.5rem;
+    font-size: 0.6rem;
     color: #fff;
 }
 
 .stat-value {
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     color: #f5a623;
     font-weight: bold;
 }
@@ -841,7 +841,7 @@ input[type="range"] {
 }
 
 .top-species-title {
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     color: #f5a623;
     display: block;
     margin-bottom: 4px;
@@ -855,7 +855,7 @@ input[type="range"] {
 }
 
 .top-species-entry {
-    font-size: 0.4rem;
+    font-size: 0.5rem;
     color: #a0a0c0;
 }
 
@@ -971,7 +971,7 @@ input[type="range"] {
 
 .nav-links a {
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.5rem;
+    font-size: 0.6rem;
     color: #a0a0c0;
     text-decoration: none;
     padding: 6px 12px;
@@ -1340,10 +1340,10 @@ input[type="range"] {
 /* =========== Points Badge (Settings Screen) =========== */
 .points-badge {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 4px 12px;
     background: linear-gradient(135deg, #f5a623, #e8961e);
     color: #000;
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     font-weight: bold;
     font-family: 'Press Start 2P', monospace;
     border: 2px solid #d4891a;
@@ -1352,7 +1352,7 @@ input[type="range"] {
 
 /* =========== Betting Card Points Label =========== */
 .betting-points {
-    font-size: 0.3rem;
+    font-size: 0.4rem;
     font-weight: bold;
     color: #f5a623;
     margin-top: 1px;
@@ -1363,7 +1363,7 @@ input[type="range"] {
     position: absolute;
     top: 2px;
     left: 2px;
-    font-size: 0.25rem;
+    font-size: 0.35rem;
     font-weight: bold;
     color: #ff4444;
     background: #2a0a0a;
@@ -1380,21 +1380,21 @@ input[type="range"] {
 
 .victory-points-value {
     display: block;
-    font-size: 1rem;
+    font-size: 1.25rem;
     font-weight: bold;
     color: #f5a623;
 }
 
 .victory-points-breakdown {
     display: block;
-    font-size: 0.35rem;
+    font-size: 0.45rem;
     color: #a0a0c0;
     margin-top: 2px;
 }
 
 .victory-points-total {
     display: block;
-    font-size: 0.4rem;
+    font-size: 0.5rem;
     color: #ccc;
     margin-top: 4px;
 }
@@ -1412,7 +1412,7 @@ input[type="range"] {
 }
 
 .history-title {
-    font-size: 0.45rem;
+    font-size: 0.55rem;
     color: #e94560;
     display: block;
     margin-bottom: 6px;
@@ -1439,15 +1439,15 @@ input[type="range"] {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 8px;
+    padding: 5px 10px;
     background: #12121e;
     border: 2px solid #222;
-    font-size: 0.35rem;
+    font-size: 0.45rem;
 }
 
 .history-sprite {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     image-rendering: pixelated;
     flex-shrink: 0;
 }
