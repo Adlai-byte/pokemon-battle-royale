@@ -147,6 +147,7 @@ export class UIManager {
         this.predictionState = null;
         this._displayPredictionStats();
         this._displayTopSpecies();
+        this._displayBattleHistory();
     }
 
     showBattle(total) {
@@ -192,8 +193,9 @@ export class UIManager {
         const confirmBtn = document.getElementById('betting-confirm');
         const skipBtn = document.getElementById('betting-skip');
 
+        let selectedTier = null;
         for (const poke of roster) {
-            const tier = this._getBSTTier(poke.id);
+            const tier = this._getDynamicTier(poke.id);
             const card = document.createElement('div');
             card.className = `betting-card ${tier.cls}`;
             card.dataset.id = poke.id;
@@ -210,15 +212,28 @@ export class UIManager {
             tierLabel.className = 'betting-tier';
             tierLabel.textContent = tier.label;
 
+            const ptsLabel = document.createElement('span');
+            ptsLabel.className = 'betting-points';
+            ptsLabel.textContent = `${tier.points} pts`;
+
             card.appendChild(img);
             card.appendChild(name);
             card.appendChild(tierLabel);
+            card.appendChild(ptsLabel);
+
+            if (tier.winCount > 0 && tier.isPromoted) {
+                const hot = document.createElement('span');
+                hot.className = 'betting-hot';
+                hot.textContent = `Won ${tier.winCount}x`;
+                card.appendChild(hot);
+            }
 
             card.addEventListener('click', () => {
                 grid.querySelectorAll('.betting-card').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
                 selectedId = poke.id;
                 selectedName = poke.name;
+                selectedTier = tier;
                 confirmBtn.disabled = false;
             });
 
@@ -227,7 +242,13 @@ export class UIManager {
 
         confirmBtn.addEventListener('click', () => {
             if (selectedId !== null) {
-                this.predictionState = { predictedId: selectedId, predictedName: selectedName };
+                this.predictionState = {
+                    predictedId: selectedId,
+                    predictedName: selectedName,
+                    tierAtPrediction: selectedTier ? selectedTier.label : 'Unknown',
+                    pointValue: selectedTier ? selectedTier.points : 0,
+                    top5PointValue: selectedTier ? selectedTier.top5Points : 0
+                };
                 screen.classList.add('hidden');
                 if (this.onBettingConfirm) this.onBettingConfirm();
             }
@@ -248,11 +269,16 @@ export class UIManager {
 
         const oldPred = this.victoryScreen.querySelector('.prediction-result');
         if (oldPred) oldPred.remove();
+        const oldPts = this.victoryScreen.querySelector('.victory-points');
+        if (oldPts) oldPts.remove();
         const oldStats = this.victoryScreen.querySelector('.battle-stats');
         if (oldStats) oldStats.remove();
 
         const predDiv = document.createElement('p');
         predDiv.className = 'prediction-result';
+
+        let pointsEarned = 0;
+        let pointsBreakdown = '';
 
         if (this.predictionState) {
             const correct = winner.originalId === this.predictionState.predictedId;
@@ -264,10 +290,26 @@ export class UIManager {
                 if (stats.currentStreak > stats.bestStreak) stats.bestStreak = stats.currentStreak;
                 predDiv.classList.add('prediction-correct');
                 predDiv.textContent = `Your prediction: ${this.predictionState.predictedName} — Correct!`;
+
+                const basePoints = this.predictionState.pointValue || 0;
+                const multiplier = this._getStreakMultiplier(stats.currentStreak);
+                pointsEarned = Math.round(basePoints * multiplier);
+                pointsBreakdown = multiplier > 1
+                    ? `${basePoints} base x${multiplier} streak`
+                    : `${this.predictionState.tierAtPrediction || 'Pick'}`;
             } else {
                 stats.currentStreak = 0;
                 predDiv.classList.add('prediction-wrong');
                 predDiv.textContent = `Your prediction: ${this.predictionState.predictedName} — Wrong`;
+
+                // Check top 5 placement
+                if (pokemons && pokemons.length > 5) {
+                    const placement = this._getPlacement(this.predictionState.predictedId, pokemons);
+                    if (placement <= 5) {
+                        pointsEarned = this.predictionState.top5PointValue || 0;
+                        pointsBreakdown = `Top 5 (placed #${placement})`;
+                    }
+                }
             }
             this._savePredictionStats(stats);
         } else {
@@ -276,6 +318,19 @@ export class UIManager {
         }
 
         this.playAgainBtn.before(predDiv);
+
+        // Show points earned
+        if (pointsEarned > 0) {
+            const total = this._awardPoints(pointsEarned, pointsBreakdown);
+            const ptsDiv = document.createElement('div');
+            ptsDiv.className = 'victory-points';
+            ptsDiv.innerHTML = `
+                <span class="victory-points-value">+${pointsEarned} pts</span>
+                <span class="victory-points-breakdown">${pointsBreakdown}</span>
+                <span class="victory-points-total">Total: ${total} pts</span>
+            `;
+            this.playAgainBtn.before(ptsDiv);
+        }
 
         // Render battle stats awards
         if (pokemons && pokemons.length > 0) {
@@ -347,7 +402,7 @@ export class UIManager {
         }
     }
 
-    _getBSTTier(pokemonId) {
+    _getStaticBSTTier(pokemonId) {
         const data = POKEMON_DATA.find(d => d.id === pokemonId);
         if (!data) return { label: 'Unknown', cls: 'tier-longshot' };
         const s = data.stats;
@@ -356,6 +411,37 @@ export class UIManager {
         if (bst >= 400) return { label: 'Contender', cls: 'tier-contender' };
         if (bst >= 300) return { label: 'Underdog', cls: 'tier-underdog' };
         return { label: 'Longshot', cls: 'tier-longshot' };
+    }
+
+    _getDynamicTier(pokemonId) {
+        const data = POKEMON_DATA.find(d => d.id === pokemonId);
+        if (!data) return { label: 'Unknown', cls: 'tier-longshot', points: 50, top5Points: 10, winCount: 0, isPromoted: false };
+        const s = data.stats;
+        const baseBST = s.hp + s.attack + s.defense + s.spAtk + s.spDef + s.speed;
+
+        // Load win counts and boost effective BST
+        const winCounts = JSON.parse(localStorage.getItem('pokemonBRWinCounts') || '{}');
+        const winCount = winCounts[data.name] || 0;
+        const boost = Math.min(winCount * 50, 200);
+        const effectiveBST = baseBST + boost;
+
+        const staticTier = this._getStaticBSTTier(pokemonId);
+        let tier;
+        if (effectiveBST >= 500) tier = { label: 'Favorite', cls: 'tier-favorite', points: 10, top5Points: 2 };
+        else if (effectiveBST >= 400) tier = { label: 'Contender', cls: 'tier-contender', points: 20, top5Points: 4 };
+        else if (effectiveBST >= 300) tier = { label: 'Underdog', cls: 'tier-underdog', points: 35, top5Points: 7 };
+        else tier = { label: 'Longshot', cls: 'tier-longshot', points: 50, top5Points: 10 };
+
+        const isPromoted = tier.label !== staticTier.label;
+        return { ...tier, winCount, isPromoted };
+    }
+
+    _getStreakMultiplier(streak) {
+        if (streak >= 5) return 2.0;
+        if (streak >= 4) return 1.75;
+        if (streak >= 3) return 1.5;
+        if (streak >= 2) return 1.25;
+        return 1.0;
     }
 
     _loadPredictionStats() {
@@ -370,23 +456,63 @@ export class UIManager {
         localStorage.setItem('pokemonBRPredictions', JSON.stringify(stats));
     }
 
+    _loadPoints() {
+        try {
+            const raw = localStorage.getItem('pokemonBRPoints');
+            if (raw) return JSON.parse(raw);
+        } catch (e) { /* ignore */ }
+        return { totalPoints: 0, pointsHistory: [] };
+    }
+
+    _savePoints(data) {
+        localStorage.setItem('pokemonBRPoints', JSON.stringify(data));
+    }
+
+    _awardPoints(earned, reason) {
+        const data = this._loadPoints();
+        data.totalPoints += earned;
+        data.pointsHistory.unshift({ date: Date.now(), earned, reason });
+        if (data.pointsHistory.length > 100) data.pointsHistory.length = 100;
+        this._savePoints(data);
+        return data.totalPoints;
+    }
+
+    _getPlacement(pokemonId, pokemons) {
+        const sorted = [...pokemons].sort((a, b) => (b.stats.survivalTime || 0) - (a.stats.survivalTime || 0));
+        const idx = sorted.findIndex(p => p.originalId === pokemonId);
+        return idx === -1 ? pokemons.length : idx + 1;
+    }
+
     _displayPredictionStats() {
         const stats = this._loadPredictionStats();
-        if (stats.totalPredictions === 0) {
+        const pointsData = this._loadPoints();
+        if (stats.totalPredictions === 0 && pointsData.totalPoints === 0) {
             this.predictionStatsEl.innerHTML = '';
             return;
         }
-        this.predictionStatsEl.innerHTML = `
-            <span class="prediction-stats-text">
+        const pointsBadge = pointsData.totalPoints > 0
+            ? `<span class="points-badge">${pointsData.totalPoints} pts</span>`
+            : '';
+        const statsText = stats.totalPredictions > 0
+            ? `<span class="prediction-stats-text">
                 Predictions: ${stats.correctPredictions}/${stats.totalPredictions} correct
                 | Streak: ${stats.currentStreak}
                 | Best: ${stats.bestStreak}
-            </span>
+            </span>`
+            : '';
+        this.predictionStatsEl.innerHTML = `
+            ${pointsBadge}
+            ${statsText}
             <button class="prediction-reset-btn" id="reset-predictions-btn">Reset</button>
         `;
         document.getElementById('reset-predictions-btn').addEventListener('click', () => {
             localStorage.removeItem('pokemonBRPredictions');
+            localStorage.removeItem('pokemonBRPoints');
+            localStorage.removeItem('pokemonBRHistory');
+            localStorage.removeItem('pokemonBRWinCounts');
             this._displayPredictionStats();
+            this._displayTopSpecies();
+            this._displayBattleHistory();
         });
     }
 
@@ -467,6 +593,10 @@ export class UIManager {
             winCounts[species] = (winCounts[species] || 0) + 1;
             localStorage.setItem('pokemonBRWinCounts', JSON.stringify(winCounts));
 
+            // Top 5 by survival time
+            const sorted = [...pokemons].sort((a, b) => (b.stats.survivalTime || 0) - (a.stats.survivalTime || 0));
+            const top5 = sorted.slice(0, 5).map(p => ({ name: p.name, id: p.originalId }));
+
             // Battle history (last 50)
             const history = JSON.parse(localStorage.getItem('pokemonBRHistory') || '[]');
             history.unshift({
@@ -474,6 +604,7 @@ export class UIManager {
                 winnerId: winner.originalId,
                 kills: winner.stats.kills,
                 participants: pokemons.length,
+                top5,
                 date: Date.now()
             });
             if (history.length > 50) history.length = 50;
@@ -501,6 +632,45 @@ export class UIManager {
                 </div>
             `;
         } catch (e) { el.innerHTML = ''; }
+    }
+
+    _displayBattleHistory() {
+        const el = document.getElementById('battle-history');
+        if (!el) return;
+        try {
+            const history = JSON.parse(localStorage.getItem('pokemonBRHistory') || '[]');
+            if (history.length === 0) {
+                el.innerHTML = '';
+                return;
+            }
+            const entries = history.slice(0, 50);
+            el.innerHTML = `
+                <span class="history-title">Battle History</span>
+                <div class="history-list">
+                    ${entries.map(h => `
+                        <div class="history-entry">
+                            <img class="history-sprite" src="${getSpriteUrl(h.winnerId)}" alt="${h.winner}">
+                            <span class="history-name">${h.winner}</span>
+                            <span class="history-kills">${h.kills} kills</span>
+                            <span class="history-participants">${h.participants}P</span>
+                            <span class="history-time">${this._formatRelativeDate(h.date)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } catch (e) { el.innerHTML = ''; }
+    }
+
+    _formatRelativeDate(timestamp) {
+        const diff = Date.now() - timestamp;
+        const seconds = Math.floor(diff / 1000);
+        if (seconds < 60) return 'just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        const days = Math.floor(hours / 24);
+        return `${days}d ago`;
     }
 
     showBracketScreen(roundData) {

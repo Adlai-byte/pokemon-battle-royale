@@ -1336,3 +1336,145 @@ input[type="range"] {
         grid-template-columns: 1fr;
     }
 }
+
+/* =========== Points Badge (Settings Screen) =========== */
+.points-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: linear-gradient(135deg, #f5a623, #e8961e);
+    color: #000;
+    font-size: 0.45rem;
+    font-weight: bold;
+    font-family: 'Press Start 2P', monospace;
+    border: 2px solid #d4891a;
+    outline: 2px solid #333;
+}
+
+/* =========== Betting Card Points Label =========== */
+.betting-points {
+    font-size: 0.3rem;
+    font-weight: bold;
+    color: #f5a623;
+    margin-top: 1px;
+}
+
+/* =========== Betting Hot Indicator =========== */
+.betting-hot {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 0.25rem;
+    font-weight: bold;
+    color: #ff4444;
+    background: #2a0a0a;
+    padding: 1px 3px;
+    border: 1px solid #ff4444;
+}
+
+/* =========== Victory Points Display =========== */
+.victory-points {
+    text-align: center;
+    margin-bottom: 12px;
+    animation: pointsPop 0.5s ease-out;
+}
+
+.victory-points-value {
+    display: block;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #f5a623;
+}
+
+.victory-points-breakdown {
+    display: block;
+    font-size: 0.35rem;
+    color: #a0a0c0;
+    margin-top: 2px;
+}
+
+.victory-points-total {
+    display: block;
+    font-size: 0.4rem;
+    color: #ccc;
+    margin-top: 4px;
+}
+
+@keyframes pointsPop {
+    0%   { transform: scale(0.3); opacity: 0; }
+    60%  { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========== Battle History (Settings Screen) =========== */
+.battle-history {
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.history-title {
+    font-size: 0.45rem;
+    color: #e94560;
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.history-list {
+    max-height: 160px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.history-list::-webkit-scrollbar {
+    width: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: #e94560;
+}
+
+.history-entry {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: #12121e;
+    border: 2px solid #222;
+    font-size: 0.35rem;
+}
+
+.history-sprite {
+    width: 24px;
+    height: 24px;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
+.history-name {
+    color: #f5a623;
+    font-weight: bold;
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-kills {
+    color: #e94560;
+    flex-shrink: 0;
+}
+
+.history-participants {
+    color: #888;
+    flex-shrink: 0;
+}
+
+.history-time {
+    color: #555;
+    flex-shrink: 0;
+    min-width: 50px;
+    text-align: right;
+}
