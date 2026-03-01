@@ -338,6 +338,29 @@ export class UIManager {
             this.playAgainBtn.before(statsDiv);
             this._saveBattleHistory(winner, pokemons);
         }
+
+        // Share button
+        const oldShare = this.victoryScreen.querySelector('.share-btn');
+        if (oldShare) oldShare.remove();
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'start-button share-btn';
+        shareBtn.textContent = 'Share Result';
+        shareBtn.addEventListener('click', async () => {
+            const card = this._renderShareCard(winner, pokemons);
+            card.toBlob(async (blob) => {
+                if (navigator.share && navigator.canShare) {
+                    try {
+                        const file = new File([blob], 'battle-result.png', { type: 'image/png' });
+                        await navigator.share({ files: [file], title: 'Pokemon Battle Royale' });
+                    } catch (e) {
+                        this._downloadBlob(blob, 'battle-result.png');
+                    }
+                } else {
+                    this._downloadBlob(blob, 'battle-result.png');
+                }
+            }, 'image/png');
+        });
+        this.playAgainBtn.before(shareBtn);
     }
 
     updateRemaining(remaining, total) {
@@ -553,6 +576,92 @@ export class UIManager {
         banner.innerHTML = `<strong>${defenderName}</strong> was eliminated by <strong>${attackerName}</strong>!`;
         document.body.appendChild(banner);
         setTimeout(() => banner.remove(), 2000);
+    }
+
+    _renderShareCard(winner, pokemons) {
+        const W = 600, H = 400;
+        const canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+
+        // Background
+        ctx.fillStyle = '#0a0a14';
+        ctx.fillRect(0, 0, W, H);
+        // Border
+        ctx.strokeStyle = '#e94560';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(4, 4, W - 8, H - 8);
+
+        // Title
+        ctx.fillStyle = '#e94560';
+        ctx.font = 'bold 18px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Pokemon Battle Royale', W / 2, 36);
+
+        // Winner label
+        ctx.fillStyle = '#f5a623';
+        ctx.font = 'bold 14px "Press Start 2P", monospace';
+        ctx.fillText('Winner', W / 2, 70);
+
+        // Winner name
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 20px "Press Start 2P", monospace';
+        ctx.fillText(winner.name, W / 2, 200);
+
+        // Winner sprite (already loaded as Image)
+        if (winner.sprite && winner.sprite.complete) {
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(winner.sprite, W / 2 - 48, 80, 96, 96);
+        }
+
+        // Stats
+        ctx.font = '10px "Press Start 2P", monospace';
+        ctx.fillStyle = '#f5a623';
+        ctx.fillText(`${winner.stats.kills} kills`, W / 2, 225);
+
+        // Prediction result
+        if (this.predictionState) {
+            const correct = winner.originalId === this.predictionState.predictedId;
+            ctx.fillStyle = correct ? '#4CAF50' : '#e94560';
+            ctx.font = '10px "Press Start 2P", monospace';
+            ctx.fillText(
+                `My pick: ${this.predictionState.predictedName} — ${correct ? 'Correct!' : 'Wrong'}`,
+                W / 2, 250
+            );
+        }
+
+        // Points
+        const pointsData = this._loadPoints();
+        if (pointsData.totalPoints > 0) {
+            ctx.fillStyle = '#f5a623';
+            ctx.font = '10px "Press Start 2P", monospace';
+            ctx.fillText(`${pointsData.totalPoints} total pts`, W / 2, 275);
+        }
+
+        // Battle stats row
+        if (pokemons && pokemons.length > 0) {
+            const mvp = [...pokemons].sort((a, b) => b.stats.kills - a.stats.kills)[0];
+            ctx.fillStyle = '#a0a0c0';
+            ctx.font = '8px "Press Start 2P", monospace';
+            ctx.fillText(`MVP: ${mvp.name} (${mvp.stats.kills} kills) | ${pokemons.length} Pokemon`, W / 2, 310);
+        }
+
+        // Footer
+        ctx.fillStyle = '#555';
+        ctx.font = '7px "Press Start 2P", monospace';
+        ctx.fillText('pokemon-battle-royale-tau.vercel.app', W / 2, H - 16);
+
+        return canvas;
+    }
+
+    _downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     _renderBattleStats(pokemons, winner) {

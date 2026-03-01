@@ -1479,6 +1479,19 @@ input[type="range"] {
     text-align: right;
 }
 
+/* =========== Share Button (Victory Screen) =========== */
+.share-btn {
+    background: #1a1a2e !important;
+    border-color: #f5a623 !important;
+    color: #f5a623 !important;
+    font-size: 0.7rem !important;
+    margin-top: 8px;
+}
+.share-btn:hover {
+    background: #f5a623 !important;
+    color: #000 !important;
+}
+
 /* =========== Mobile Game Layout =========== */
 @media (max-width: 900px) {
     .hud-main {
