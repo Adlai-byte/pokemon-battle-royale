@@ -307,4 +307,119 @@ export class MusicManager {
             noise.stop(time + 0.03);
         }
     }
+
+    playSFX(type) {
+        if (!this.ctx || this.muted) return;
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const t = this.ctx.currentTime;
+        switch (type) {
+            case 'hit': this._sfxHit(t); break;
+            case 'superEffective': this._sfxSuperEffective(t); break;
+            case 'crit': this._sfxCrit(t); break;
+            case 'elimination': this._sfxElimination(t); break;
+            case 'evolution': this._sfxEvolution(t); break;
+            case 'itemPickup': this._sfxItemPickup(t); break;
+        }
+    }
+
+    _sfxHit(t) {
+        const bufSize = this.ctx.sampleRate * 0.06;
+        const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.08, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+        src.connect(g);
+        g.connect(this.masterGain);
+        src.start(t);
+        src.stop(t + 0.06);
+    }
+
+    _sfxSuperEffective(t) {
+        const osc = this.ctx.createOscillator();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(880, t);
+        osc.frequency.exponentialRampToValueAtTime(440, t + 0.15);
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.1, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        osc.connect(g);
+        g.connect(this.masterGain);
+        osc.start(t);
+        osc.stop(t + 0.2);
+    }
+
+    _sfxCrit(t) {
+        const bufSize = this.ctx.sampleRate * 0.04;
+        const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+        src.connect(g);
+        g.connect(this.masterGain);
+        src.start(t);
+        src.stop(t + 0.04);
+        const osc = this.ctx.createOscillator();
+        osc.frequency.setValueAtTime(120, t);
+        osc.frequency.exponentialRampToValueAtTime(40, t + 0.12);
+        const g2 = this.ctx.createGain();
+        g2.gain.setValueAtTime(0.15, t);
+        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        osc.connect(g2);
+        g2.connect(this.masterGain);
+        osc.start(t);
+        osc.stop(t + 0.12);
+    }
+
+    _sfxElimination(t) {
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(600, t);
+        osc.frequency.exponentialRampToValueAtTime(80, t + 0.3);
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.08, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.connect(g);
+        g.connect(this.masterGain);
+        osc.start(t);
+        osc.stop(t + 0.35);
+    }
+
+    _sfxEvolution(t) {
+        const notes = [261.6, 329.6, 392.0];
+        notes.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            osc.type = 'square';
+            osc.frequency.value = freq;
+            const g = this.ctx.createGain();
+            const start = t + i * 0.15;
+            g.gain.setValueAtTime(0.1, start);
+            g.gain.exponentialRampToValueAtTime(0.001, start + 0.2);
+            osc.connect(g);
+            g.connect(this.masterGain);
+            osc.start(start);
+            osc.stop(start + 0.2);
+        });
+    }
+
+    _sfxItemPickup(t) {
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.3, t);
+        osc.frequency.setValueAtTime(784.0, t + 0.05);
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.08, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        osc.connect(g);
+        g.connect(this.masterGain);
+        osc.start(t);
+        osc.stop(t + 0.12);
+    }
 }

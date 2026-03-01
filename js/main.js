@@ -43,7 +43,8 @@ class Game {
             this.effects,
             (attacker, defender) => this._onElimination(attacker, defender),
             (text) => this.ui.addEvent(text),
-            (text, type) => this.ui.showCommentaryBanner(text, type)
+            (text, type) => this.ui.showCommentaryBanner(text, type),
+            this.music
         );
 
         this.battleEngine.weatherManager = this.weather;
@@ -379,7 +380,7 @@ class Game {
         // Update items (proximity pickup)
         this.itemManager.update(dt, alivePokemons, this.effects, (text) => {
             this.ui.addEvent(text);
-        });
+        }, this.music);
 
         // Update weather, arena events, storm circle
         this.weather.update(dt, this.pokemons, this.arena.width, this.arena.height, this.effects, (text) => {

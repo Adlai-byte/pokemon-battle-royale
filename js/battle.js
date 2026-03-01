@@ -60,11 +60,12 @@ function pickTemplate(key, vars) {
 }
 
 export class BattleEngine {
-    constructor(effects, onElimination, onEvent, onCommentary) {
+    constructor(effects, onElimination, onEvent, onCommentary, musicManager) {
         this.effects = effects;
         this.onElimination = onElimination;
         this.onEvent = onEvent;
         this.onCommentary = onCommentary || null;
+        this.music = musicManager || null;
         this.lastCommentaryTime = 0;
         this.weatherManager = null; // Set by main.js
     }
@@ -218,6 +219,7 @@ export class BattleEngine {
         defender.triggerKnockback(attacker.x, attacker.y);
         this.effects.addDamageNumber(defender.x, defender.y, damage, false);
         this.effects.spawnAttackEffect(defender.x, defender.y, attacker.types[0] || 'normal');
+        this.music?.playSFX('hit');
         // Ability: contact punish
         this._applyAbilityOnTakeDamage(attacker, defender);
 
@@ -392,7 +394,9 @@ export class BattleEngine {
         this._applyAbilityOnTakeDamage(attacker, defender);
 
         if (typeMultiplier > 1) this.effects.shake(10, 250);
+        if (typeMultiplier >= 1.5) this.music?.playSFX('superEffective');
         if (isCrit) this.effects.shake(12, 300);
+        if (isCrit) this.music?.playSFX('crit');
 
         // Event log
         let msg = `${attacker.name} used ${move.name}!`;
@@ -630,6 +634,7 @@ export class BattleEngine {
             eliminated.startElimination(eliminator);
             this.effects.spawnEliminationBurst(eliminated.x, eliminated.y, eliminated.types);
             this.effects.shake(15, 400);
+            this.music?.playSFX('elimination');
             eliminator.target = null; // Will reassign next frame
             eliminator.heal(HEAL_PERCENT);
             eliminator.combatCooldown = 500;
@@ -669,6 +674,7 @@ export class BattleEngine {
                     if (evoData) {
                         const oldName = eliminator.evolve(evoData);
                         this.effects.spawnEvolutionEffect(eliminator.x, eliminator.y);
+                        this.music?.playSFX('evolution');
                         this.onEvent(`${oldName} evolved into ${eliminator.name}!`);
                         this._tryCommentary(pickTemplate('evolution', { name: eliminator.name }), 'hype');
                     }

@@ -111,7 +111,7 @@ export class ItemManager {
         return nearest;
     }
 
-    update(dt, pokemons, effects, onEvent) {
+    update(dt, pokemons, effects, onEvent, music) {
         for (let i = this.items.length - 1; i >= 0; i--) {
             const item = this.items[i];
             const nearest = this._findNearest(item, pokemons);
@@ -127,7 +127,7 @@ export class ItemManager {
                 const dx = p.x - item.x;
                 const dy = p.y - item.y;
                 if (dx * dx + dy * dy < PICKUP_RANGE * PICKUP_RANGE) {
-                    this._applyItem(item, p, effects, onEvent);
+                    this._applyItem(item, p, effects, onEvent, music);
                     item.alive = false;
                     this.items.splice(i, 1);
                     break;
@@ -136,8 +136,9 @@ export class ItemManager {
         }
     }
 
-    _applyItem(item, pokemon, effects, onEvent) {
+    _applyItem(item, pokemon, effects, onEvent, music) {
         effects.spawnItemPickupEffect(pokemon.x, pokemon.y, item.type.color);
+        music?.playSFX('itemPickup');
         pokemon.stats.itemsPickedUp++;
 
         switch (item.type.effect) {
