@@ -1478,3 +1478,93 @@ input[type="range"] {
     min-width: 50px;
     text-align: right;
 }
+
+/* =========== Mobile Game Layout =========== */
+@media (max-width: 900px) {
+    .hud-main {
+        flex-direction: column;
+    }
+    .leaderboard {
+        width: 100%;
+        max-height: 120px;
+        border-right: none;
+        border-bottom: 3px solid #333;
+        order: 2;
+    }
+    .leaderboard-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        padding: 2px 4px;
+    }
+    .lb-row {
+        flex: 1;
+        min-width: 120px;
+    }
+    .arena-wrapper {
+        order: 1;
+        min-height: 300px;
+    }
+    .event-log {
+        width: 100%;
+        max-height: 100px;
+        border-left: none;
+        border-top: 3px solid #333;
+        order: 3;
+    }
+    .hud-top {
+        flex-wrap: wrap;
+        gap: 4px;
+        font-size: 0.55rem;
+    }
+    .hud-controls input[type="range"] {
+        width: 60px;
+    }
+    .settings-container {
+        padding: 20px 16px;
+        max-width: 95%;
+    }
+    .betting-grid {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    }
+    .betting-card img {
+        width: 44px;
+        height: 44px;
+    }
+    .betting-name { font-size: 0.45rem; }
+    .betting-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .start-button {
+        font-size: 0.85rem;
+        padding: 12px 24px;
+    }
+    .victory-container {
+        padding: 16px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    #winner-sprite {
+        width: 128px;
+        height: 128px;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+    }
+    .features-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .title { font-size: 1.25rem; }
+    .hud-top { font-size: 0.45rem; }
+    .leaderboard { max-height: 80px; font-size: 0.45rem; }
+    .event-log { max-height: 70px; font-size: 0.4rem; }
+    .lb-sprite { width: 20px; height: 20px; }
+    .betting-grid {
+        grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+    }
+}
