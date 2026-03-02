@@ -71,7 +71,7 @@ export class UIManager {
             btn.addEventListener('click', () => {
                 this.rosterButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                this.selectedRosterSize = parseInt(btn.dataset.count);
+                this.selectedRosterSize = btn.dataset.count === 'all' ? 9999 : parseInt(btn.dataset.count);
             });
         });
 

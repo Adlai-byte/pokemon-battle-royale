@@ -103,6 +103,10 @@ class Game {
             this.arena.setTheme(shopData.selected);
         }
 
+        // Set "All" button label to actual base-form count
+        const allBtn = document.getElementById('all-roster-btn');
+        if (allBtn) allBtn.textContent = `All (${BASE_FORM_POKEMON.length})`;
+
         this.ui.showSettings();
         this.music.playTrack('menu');
         this._loop(0);

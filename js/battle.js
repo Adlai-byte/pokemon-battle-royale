@@ -752,6 +752,8 @@ export class BattleEngine {
             damage = Math.round(damage * 1.5);
         } else if (ability === 'Torrent' && hpRatio < 0.33 && move && move.type === 'water') {
             damage = Math.round(damage * 1.5);
+        } else if (ability === 'Swarm' && hpRatio < 0.33 && move && move.type === 'bug') {
+            damage = Math.round(damage * 1.5);
         }
         if (ability === 'Guts' && attacker.statusEffect && move && move.cat === MOVE_CAT.PHYSICAL) {
             damage = Math.round(damage * 1.5);
