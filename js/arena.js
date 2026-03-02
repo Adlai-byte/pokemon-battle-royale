@@ -154,6 +154,13 @@ const ARENA_TYPES = [
     }
 ];
 
+const CUSTOM_THEMES = {
+    'neon-night': { bg: '#0a001a', tile1: '#1a0033', tile2: '#0d001a', border: '#ff00ff', accent: '#00ffff', line: '#330066' },
+    'classic-green': { bg: '#0a2a0a', tile1: '#0d3d0d', tile2: '#082808', border: '#00ff00', accent: '#88ff88', line: '#1a4a1a' },
+    'lava-caves': { bg: '#1a0800', tile1: '#2d0f00', tile2: '#1a0800', border: '#ff4400', accent: '#ff8800', line: '#331100' },
+    'frozen-tundra': { bg: '#001a2a', tile1: '#002244', tile2: '#001a33', border: '#44aaff', accent: '#88ccff', line: '#003355' },
+};
+
 export class Arena {
     constructor(canvas) {
         this.canvas = canvas;
@@ -172,6 +179,11 @@ export class Arena {
     selectRandomArena() {
         this.currentArena = ARENA_TYPES[Math.floor(Math.random() * ARENA_TYPES.length)];
         this._bgDirty = true;
+    }
+
+    setTheme(themeId) {
+        this.customTheme = CUSTOM_THEMES[themeId] || null;
+        this._renderOffscreenBg();
     }
 
     resize() {
@@ -237,23 +249,28 @@ export class Arena {
         const ctx = this._bgCanvas.getContext('2d');
         const arena = this.currentArena;
 
+        // If a custom theme is active, use its colors; otherwise use the arena tileset
+        const palette = this.customTheme
+            ? { tile1: this.customTheme.tile1, tile2: this.customTheme.tile2, borderColor: this.customTheme.border, gridColor: this.customTheme.line }
+            : arena;
+
         // Checkerboard tiles
         const tileSize = 40;
         for (let y = 0; y < this.height; y += tileSize) {
             for (let x = 0; x < this.width; x += tileSize) {
                 const isAlt = ((x / tileSize) + (y / tileSize)) % 2 === 0;
-                ctx.fillStyle = isAlt ? arena.tile1 : arena.tile2;
+                ctx.fillStyle = isAlt ? palette.tile1 : palette.tile2;
                 ctx.fillRect(x, y, tileSize, tileSize);
             }
         }
 
         // Arena border
-        ctx.strokeStyle = arena.borderColor;
+        ctx.strokeStyle = palette.borderColor;
         ctx.lineWidth = 3;
         ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
 
         // Grid lines
-        ctx.strokeStyle = arena.gridColor;
+        ctx.strokeStyle = palette.gridColor;
         ctx.lineWidth = 1;
         const gridSize = 80;
         for (let x = gridSize; x < this.width; x += gridSize) {
@@ -270,7 +287,7 @@ export class Arena {
         }
 
         // Center circle
-        ctx.strokeStyle = arena.borderColor;
+        ctx.strokeStyle = palette.borderColor;
         ctx.globalAlpha = 0.5;
         ctx.lineWidth = 2;
         ctx.beginPath();

@@ -153,6 +153,7 @@ export class UIManager {
         this._displayPredictionStats();
         this._displayTopSpecies();
         this._displayBattleHistory();
+        this._displayShop();
     }
 
     showBattle(total) {
@@ -538,9 +539,12 @@ export class UIManager {
             localStorage.removeItem('pokemonBRPoints');
             localStorage.removeItem('pokemonBRHistory');
             localStorage.removeItem('pokemonBRWinCounts');
+            localStorage.removeItem('pokemonBRShop');
             this._displayPredictionStats();
             this._displayTopSpecies();
             this._displayBattleHistory();
+            this._displayShop();
+            if (this.onThemeChange) this.onThemeChange(null);
         });
     }
 
@@ -724,6 +728,78 @@ export class UIManager {
             if (history.length > 50) history.length = 50;
             localStorage.setItem('pokemonBRHistory', JSON.stringify(history));
         } catch (e) { /* localStorage may be full */ }
+    }
+
+    _displayShop() {
+        const el = document.getElementById('points-shop');
+        if (!el) return;
+        const shopData = JSON.parse(localStorage.getItem('pokemonBRShop') || '{"owned":[],"selected":null}');
+        const pointsData = this._loadPoints();
+        const themes = [
+            { id: 'neon-night', name: 'Neon Night', cost: 200, color: '#ff00ff' },
+            { id: 'classic-green', name: 'Classic Green', cost: 300, color: '#00ff00' },
+            { id: 'lava-caves', name: 'Lava Caves', cost: 400, color: '#ff4400' },
+            { id: 'frozen-tundra', name: 'Frozen Tundra', cost: 500, color: '#44aaff' },
+        ];
+
+        let html = '<span class="shop-title">Arena Themes</span>';
+        html += '<div class="shop-grid">';
+        themes.forEach(theme => {
+            const owned = shopData.owned.includes(theme.id);
+            const selected = shopData.selected === theme.id;
+            const canAfford = pointsData.totalPoints >= theme.cost;
+
+            html += `<div class="shop-card ${owned ? 'owned' : ''} ${selected ? 'selected' : ''}">`;
+            html += `<div class="shop-card-preview" style="background:linear-gradient(135deg, ${theme.color}22, ${theme.color}44); border: 1px solid ${theme.color};height:30px;margin-bottom:4px;"></div>`;
+            html += `<div class="shop-card-name">${theme.name}</div>`;
+
+            if (selected) {
+                html += `<button class="shop-action-btn shop-deselect" data-theme="${theme.id}">Unequip</button>`;
+            } else if (owned) {
+                html += `<button class="shop-action-btn shop-select" data-theme="${theme.id}">Equip</button>`;
+            } else {
+                html += `<button class="shop-action-btn shop-buy ${canAfford ? '' : 'disabled'}" data-theme="${theme.id}" data-cost="${theme.cost}" ${canAfford ? '' : 'disabled'}>${theme.cost} pts</button>`;
+            }
+            html += '</div>';
+        });
+        html += '</div>';
+        el.innerHTML = html;
+
+        // Wire up button events
+        el.querySelectorAll('.shop-buy:not(.disabled)').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const themeId = btn.dataset.theme;
+                const cost = parseInt(btn.dataset.cost);
+                const pd = this._loadPoints();
+                if (pd.totalPoints >= cost) {
+                    pd.totalPoints -= cost;
+                    this._savePoints(pd);
+                    shopData.owned.push(themeId);
+                    shopData.selected = themeId;
+                    localStorage.setItem('pokemonBRShop', JSON.stringify(shopData));
+                    if (this.onThemeChange) this.onThemeChange(themeId);
+                    this._displayShop();
+                    this._displayPredictionStats();
+                }
+            });
+        });
+        el.querySelectorAll('.shop-select').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const themeId = btn.dataset.theme;
+                shopData.selected = themeId;
+                localStorage.setItem('pokemonBRShop', JSON.stringify(shopData));
+                if (this.onThemeChange) this.onThemeChange(themeId);
+                this._displayShop();
+            });
+        });
+        el.querySelectorAll('.shop-deselect').forEach(btn => {
+            btn.addEventListener('click', () => {
+                shopData.selected = null;
+                localStorage.setItem('pokemonBRShop', JSON.stringify(shopData));
+                if (this.onThemeChange) this.onThemeChange(null);
+                this._displayShop();
+            });
+        });
     }
 
     _displayTopSpecies() {

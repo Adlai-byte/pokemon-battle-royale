@@ -1557,6 +1557,30 @@ input[type="range"] {
     min-width: 2px;
 }
 
+/* =========== Points Shop =========== */
+.points-shop { margin-bottom: 12px; }
+.shop-title { font-size: 0.55rem; color: #f5a623; display: block; margin-bottom: 6px; }
+.shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.shop-card { padding: 8px; background: #12121e; border: 2px solid #222; text-align: center; }
+.shop-card-name { font-size: 0.45rem; color: #ccc; margin-bottom: 4px; }
+.shop-action-btn {
+    padding: 4px 10px;
+    border: 1px solid #555;
+    background: transparent;
+    color: #ccc;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.35rem;
+    transition: background 0.1s;
+}
+.shop-action-btn:hover:not(.disabled) { background: #333; }
+.shop-buy { color: #f5a623; border-color: #f5a623; }
+.shop-buy.disabled { opacity: 0.4; cursor: not-allowed; }
+.shop-select { color: #4CAF50; border-color: #4CAF50; }
+.shop-deselect { color: #e94560; border-color: #e94560; }
+.shop-card.owned { border-color: #4CAF50; }
+.shop-card.selected { border-color: #f5a623; outline: 2px solid #f5a623; }
+
 /* =========== Mobile Game Layout =========== */
 @media (max-width: 900px) {
     .hud-main {

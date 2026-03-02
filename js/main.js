@@ -73,6 +73,16 @@ class Game {
             this.ui.camBtn.textContent = this.arena.autoCam ? 'Auto-Cam' : 'Free View';
         };
 
+        this.ui.onThemeChange = (themeId) => {
+            this.arena.setTheme(themeId);
+        };
+
+        // Load saved arena theme from shop
+        const shopData = JSON.parse(localStorage.getItem('pokemonBRShop') || '{}');
+        if (shopData.selected) {
+            this.arena.setTheme(shopData.selected);
+        }
+
         this.ui.showSettings();
         this.music.playTrack('menu');
         this._loop(0);
