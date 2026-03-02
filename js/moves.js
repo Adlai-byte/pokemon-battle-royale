@@ -21,9 +21,9 @@ export const MOVES_DB = {
     tackle:        { name: "Tackle",        type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 40 },
     bodySlam:      { name: "Body Slam",     type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 85 },
     hyperBeam:     { name: "Hyper Beam",    type: "normal",   cat: MOVE_CAT.SPECIAL,  power: 150, anim: 'beam' },
-    extremeSpeed:  { name: "Extreme Speed", type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 80, effect: "priority" },
-    rapidSpin:     { name: "Rapid Spin",   type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 50 },
-    return:        { name: "Return",       type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 102 },
+    extremeSpeed:  { name: "Extreme Speed", type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 80, effect: "priority", anim: 'fly' },
+    rapidSpin:     { name: "Rapid Spin",   type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 50, anim: 'punch' },
+    return:        { name: "Return",       type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 102, anim: 'punch' },
     quickAttack:   { name: "Quick Attack",  type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 40, effect: "priority" },
     slash:         { name: "Slash",         type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 70, effect: "highCrit", anim: 'slash' },
     headbutt:      { name: "Headbutt",      type: "normal",   cat: MOVE_CAT.PHYSICAL, power: 70 },
@@ -69,7 +69,7 @@ export const MOVES_DB = {
     thunderbolt:   { name: "Thunderbolt",   type: "electric", cat: MOVE_CAT.SPECIAL,  power: 90, anim: 'beam' },
     thunder:       { name: "Thunder",       type: "electric", cat: MOVE_CAT.SPECIAL,  power: 110, anim: 'explosion' },
     thunderPunch:  { name: "Thunder Punch", type: "electric", cat: MOVE_CAT.PHYSICAL, power: 75, anim: 'punch' },
-    spark:         { name: "Spark",         type: "electric", cat: MOVE_CAT.PHYSICAL, power: 65 },
+    spark:         { name: "Spark",         type: "electric", cat: MOVE_CAT.PHYSICAL, power: 65, anim: 'fly' },
     zapCannon:     { name: "Zap Cannon",    type: "electric", cat: MOVE_CAT.SPECIAL,  power: 120, anim: 'beam' },
 
     // === GRASS ===
@@ -144,7 +144,7 @@ export const MOVES_DB = {
     hypnosis:      { name: "Hypnosis",      type: "psychic",  cat: MOVE_CAT.STATUS,   power: 0, effect: "sleep" },
 
     // === BUG ===
-    megahorn:      { name: "Megahorn",      type: "bug",      cat: MOVE_CAT.PHYSICAL, power: 120 },
+    megahorn:      { name: "Megahorn",      type: "bug",      cat: MOVE_CAT.PHYSICAL, power: 120, anim: 'fly' },
     bugBite:       { name: "Bug Bite",      type: "bug",      cat: MOVE_CAT.PHYSICAL, power: 60 },
     pinMissile:    { name: "Pin Missile",   type: "bug",      cat: MOVE_CAT.PHYSICAL, power: 62 },
     twineedle:     { name: "Twineedle",     type: "bug",      cat: MOVE_CAT.PHYSICAL, power: 75 },
@@ -155,7 +155,7 @@ export const MOVES_DB = {
     furySwipes:    { name: "Fury Cutter",   type: "bug",      cat: MOVE_CAT.PHYSICAL, power: 55, anim: 'slash' },
 
     // === ROCK ===
-    rollout:       { name: "Rollout",       type: "rock",     cat: MOVE_CAT.PHYSICAL, power: 30 },
+    rollout:       { name: "Rollout",       type: "rock",     cat: MOVE_CAT.PHYSICAL, power: 30, anim: 'fly' },
     rockSlide:     { name: "Rock Slide",    type: "rock",     cat: MOVE_CAT.PHYSICAL, power: 75, anim: 'projectile' },
     rockThrow:     { name: "Rock Throw",    type: "rock",     cat: MOVE_CAT.PHYSICAL, power: 50, anim: 'projectile' },
     ancientPower:  { name: "Ancient Power", type: "rock",     cat: MOVE_CAT.SPECIAL,  power: 60, effect: "allBoost", anim: 'projectile' },
@@ -173,21 +173,21 @@ export const MOVES_DB = {
     dragonBreath:  { name: "Dragon Breath", type: "dragon",   cat: MOVE_CAT.SPECIAL,  power: 60, anim: 'beam' },
 
     // === DARK ===
-    crunch:        { name: "Crunch",        type: "dark",     cat: MOVE_CAT.PHYSICAL, power: 80 },
-    bite:          { name: "Bite",          type: "dark",     cat: MOVE_CAT.PHYSICAL, power: 60 },
-    pursuit:       { name: "Pursuit",       type: "dark",     cat: MOVE_CAT.PHYSICAL, power: 40 },
-    faintAttack:   { name: "Faint Attack",  type: "dark",     cat: MOVE_CAT.PHYSICAL, power: 60 },
+    crunch:        { name: "Crunch",        type: "dark",     cat: MOVE_CAT.PHYSICAL, power: 80, anim: 'slash' },
+    bite:          { name: "Bite",          type: "dark",     cat: MOVE_CAT.PHYSICAL, power: 60, anim: 'slash' },
+    pursuit:       { name: "Pursuit",       type: "dark",     cat: MOVE_CAT.PHYSICAL, power: 40, anim: 'fly' },
+    faintAttack:   { name: "Faint Attack",  type: "dark",     cat: MOVE_CAT.PHYSICAL, power: 60, anim: 'fly' },
     darkPulse:     { name: "Dark Pulse",    type: "dark",     cat: MOVE_CAT.SPECIAL,  power: 80, anim: 'beam' },
 
     // === STEEL ===
     ironTail:      { name: "Iron Tail",     type: "steel",    cat: MOVE_CAT.PHYSICAL, power: 100, anim: 'slash' },
     flashCannon:   { name: "Flash Cannon",  type: "steel",    cat: MOVE_CAT.SPECIAL,  power: 80, anim: 'beam' },
-    metalClaw:     { name: "Metal Claw",    type: "steel",    cat: MOVE_CAT.PHYSICAL, power: 50 },
-    steelWing:     { name: "Steel Wing",    type: "steel",    cat: MOVE_CAT.PHYSICAL, power: 70 },
+    metalClaw:     { name: "Metal Claw",    type: "steel",    cat: MOVE_CAT.PHYSICAL, power: 50, anim: 'slash' },
+    steelWing:     { name: "Steel Wing",    type: "steel",    cat: MOVE_CAT.PHYSICAL, power: 70, anim: 'fly' },
 
     // === FAIRY ===
     moonblast:     { name: "Moonblast",     type: "fairy",    cat: MOVE_CAT.SPECIAL,  power: 95, anim: 'projectile' },
-    playRough:     { name: "Play Rough",    type: "fairy",    cat: MOVE_CAT.PHYSICAL, power: 90 },
+    playRough:     { name: "Play Rough",    type: "fairy",    cat: MOVE_CAT.PHYSICAL, power: 90, anim: 'punch' },
     dazzleGleam:   { name: "Dazzling Gleam",type: "fairy",    cat: MOVE_CAT.SPECIAL,  power: 80, anim: 'explosion' },
     disarmVoice:   { name: "Disarming Voice",type: "fairy",   cat: MOVE_CAT.SPECIAL,  power: 60, anim: 'wave' },
 
