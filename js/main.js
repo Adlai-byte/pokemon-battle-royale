@@ -87,6 +87,8 @@ class Game {
             this.ui.showSettings();
         };
         this.ui.onMuteToggle = () => this.music.toggleMute();
+        this.ui.onMusicVolume = (v) => this.music.setMusicVolume(v);
+        this.ui.onSfxVolume = (v) => this.music.setSfxVolume(v);
         this.ui.onCamToggle = () => {
             this.arena.autoCam = !this.arena.autoCam;
             if (!this.arena.autoCam) this.arena.resetCamera();
@@ -109,7 +111,24 @@ class Game {
 
         this.ui.showSettings();
         this.music.playTrack('menu');
+
+        // Apply persisted volume levels
+        const savedMusic = localStorage.getItem('pokemonBRMusicVolume');
+        if (savedMusic !== null) this.music.setMusicVolume(parseInt(savedMusic) / 100);
+        const savedSfx = localStorage.getItem('pokemonBRSfxVolume');
+        if (savedSfx !== null) this.music.setSfxVolume(parseInt(savedSfx) / 100);
+
         this._loop(0);
+    }
+
+    _filterByType(pool) {
+        const disabled = this.ui.customRules.typeFilter;
+        if (disabled.size === 0) return pool;
+        const filtered = pool.filter(p =>
+            !p.types.every(t => disabled.has(t))
+        );
+        // Guard: if filtered pool has < 2, ignore filter
+        return filtered.length >= 2 ? filtered : pool;
     }
 
     _prepareRoster(rosterSize) {
@@ -132,13 +151,14 @@ class Game {
                     this.ui.showBettingScreen(this.roster);
                 }
             };
-            this.ui.showCustomRosterScreen(BASE_FORM_POKEMON, clamped);
+            this.ui.showCustomRosterScreen(this._filterByType(BASE_FORM_POKEMON), clamped);
             return;
         }
 
         // Random roster (default)
-        const shuffled = [...BASE_FORM_POKEMON].sort(() => Math.random() - 0.5);
-        this.roster = shuffled.slice(0, clamped);
+        const filteredPool = this._filterByType(BASE_FORM_POKEMON);
+        const shuffled = [...filteredPool].sort(() => Math.random() - 0.5);
+        this.roster = shuffled.slice(0, Math.min(clamped, filteredPool.length));
 
         if (this.tournamentMode) {
             this._prepareTournament(clamped);
@@ -170,6 +190,9 @@ class Game {
         this.lastTime = performance.now();
         this.itemManager.clear();
         this.weather.reset();
+        this.weather.weatherEnabled = this.ui.customRules.weatherEnabled;
+        this.weather.arenaEventsEnabled = this.ui.customRules.arenaEventsEnabled;
+        this.weather.weatherLock = this.ui.customRules.weatherLock;
 
         // Mark predicted Pokemon with golden ring
         if (this.ui.predictionState) {
@@ -203,7 +226,9 @@ class Game {
         this.ui.showEliminationBanner(attacker.name, defender.name);
 
         // Spawn item drop
-        this.itemManager.spawnItem(defender.x, defender.y);
+        if (this.ui.customRules.itemsEnabled) {
+            this.itemManager.spawnItem(defender.x, defender.y);
+        }
 
         if (remaining <= 1) {
             setTimeout(() => {
@@ -282,6 +307,9 @@ class Game {
         this.lastTime = performance.now();
         this.itemManager.clear();
         this.weather.reset();
+        this.weather.weatherEnabled = this.ui.customRules.weatherEnabled;
+        this.weather.arenaEventsEnabled = this.ui.customRules.arenaEventsEnabled;
+        this.weather.weatherLock = this.ui.customRules.weatherLock;
 
         const groupLabel = `Round ${this.tournamentRound} - Group ${this.currentGroupIndex + 1}/${this.tournamentGroups.length}`;
         this.ui.showBattle(this.totalCount);
@@ -299,7 +327,9 @@ class Game {
         this.ui.updateRemaining(remaining, this.totalCount);
         this.ui.addEvent(`${defender.name} eliminated by ${attacker.name}!`, true);
         this.ui.showEliminationBanner(attacker.name, defender.name);
-        this.itemManager.spawnItem(defender.x, defender.y);
+        if (this.ui.customRules.itemsEnabled) {
+            this.itemManager.spawnItem(defender.x, defender.y);
+        }
 
         if (remaining <= 1) {
             setTimeout(() => {
@@ -442,7 +472,7 @@ class Game {
     _showEndlessDraft() {
         // Pick 3 random base-form options not already on team
         const teamIds = new Set(this.endlessTeamData.map(d => d.id));
-        const pool = BASE_FORM_POKEMON.filter(d => !teamIds.has(d.id));
+        const pool = this._filterByType(BASE_FORM_POKEMON).filter(d => !teamIds.has(d.id));
         const shuffled = pool.sort(() => Math.random() - 0.5);
         const options = shuffled.slice(0, 3);
 
@@ -497,6 +527,9 @@ class Game {
         this.lastTime = performance.now();
         this.itemManager.clear();
         this.weather.reset();
+        this.weather.weatherEnabled = this.ui.customRules.weatherEnabled;
+        this.weather.arenaEventsEnabled = this.ui.customRules.arenaEventsEnabled;
+        this.weather.weatherLock = this.ui.customRules.weatherLock;
 
         this.ui.showBattle(this.totalCount);
         this.ui.updateWaveIndicator(this.endlessWave);
@@ -565,7 +598,9 @@ class Game {
         this.ui.updateRemaining(remaining, this.totalCount);
         this.ui.addEvent(`${defender.name} eliminated by ${attacker.name}!`, true);
         this.ui.showEliminationBanner(attacker.name, defender.name);
-        this.itemManager.spawnItem(defender.x, defender.y);
+        if (this.ui.customRules.itemsEnabled) {
+            this.itemManager.spawnItem(defender.x, defender.y);
+        }
 
         const teamAlive = this.endlessTeamPokemon.filter(p => p.alive && !p.eliminating);
         const enemiesAlive = this.pokemons.filter(p => p.alive && !p.eliminating && !p._isPlayerTeam);
@@ -704,7 +739,7 @@ class Game {
         }
 
         const teamIds = new Set(this.endlessTeamData.map(d => d.id));
-        const pool = BASE_FORM_POKEMON.filter(d => !teamIds.has(d.id));
+        const pool = this._filterByType(BASE_FORM_POKEMON).filter(d => !teamIds.has(d.id));
         const shuffled = pool.sort(() => Math.random() - 0.5);
         const options = shuffled.slice(0, 3);
 

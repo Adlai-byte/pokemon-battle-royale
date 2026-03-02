@@ -9,7 +9,7 @@ export const MOVE_CAT = {
     STATUS: 'status',       // Inflicts status or debuffs opponent
 };
 
-// All moves used in Gen 1 movesets
+// All moves used in Gen 1 & Gen 2 movesets
 // power: 0 for non-damaging, otherwise base power
 // cat: move category
 // type: elemental type
@@ -226,7 +226,7 @@ export const MOVES_DB = {
     tailGlow:      { name: "Tail Glow",     type: "bug",      cat: MOVE_CAT.ENHANCE,  power: 0, effect: "spAtkUp2" },
 };
 
-// Movesets for all 151 Gen 1 Pokemon
+// Movesets for all Gen 1 & Gen 2 Pokemon (251 total)
 // Each Pokemon gets 4 moves: mix of attacking, defensive, and enhancement
 export const POKEMON_MOVESETS = {
     1:   ["vineWhip", "sludge", "leechSeed", "growth"],                  // Bulbasaur

@@ -141,6 +141,8 @@ export class MusicManager {
         this.playing = false;
         this.muted = false;
         this.masterGain = null;
+        this.musicGain = null;
+        this.sfxGain = null;
         this.nextNoteTime = 0;
         this.currentStep = 0;
         this.schedulerTimer = null;
@@ -154,6 +156,14 @@ export class MusicManager {
         this.masterGain = this.ctx.createGain();
         this.masterGain.gain.value = this.muted ? 0 : 0.15;
         this.masterGain.connect(this.ctx.destination);
+
+        this.musicGain = this.ctx.createGain();
+        this.musicGain.gain.value = 1.0;
+        this.musicGain.connect(this.masterGain);
+
+        this.sfxGain = this.ctx.createGain();
+        this.sfxGain.gain.value = 1.0;
+        this.sfxGain.connect(this.masterGain);
     }
 
     playTrack(name) {
@@ -256,7 +266,7 @@ export class MusicManager {
         gain.gain.setValueAtTime(volume, time);
         gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
         osc.connect(gain);
-        gain.connect(this.masterGain);
+        gain.connect(this.musicGain);
         osc.start(time);
         osc.stop(time + duration + 0.01);
     }
@@ -270,7 +280,7 @@ export class MusicManager {
             gain.gain.setValueAtTime(0.2, time);
             gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
             osc.connect(gain);
-            gain.connect(this.masterGain);
+            gain.connect(this.musicGain);
             osc.start(time);
             osc.stop(time + 0.15);
         } else if (type === 'snare') {
@@ -284,7 +294,7 @@ export class MusicManager {
             gain.gain.setValueAtTime(0.1, time);
             gain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
             noise.connect(gain);
-            gain.connect(this.masterGain);
+            gain.connect(this.musicGain);
             noise.start(time);
             noise.stop(time + 0.08);
         } else if (type === 'hihat') {
@@ -302,7 +312,7 @@ export class MusicManager {
             gain.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
             noise.connect(filter);
             filter.connect(gain);
-            gain.connect(this.masterGain);
+            gain.connect(this.musicGain);
             noise.start(time);
             noise.stop(time + 0.03);
         }
@@ -333,7 +343,7 @@ export class MusicManager {
         g.gain.setValueAtTime(0.08, t);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
         src.connect(g);
-        g.connect(this.masterGain);
+        g.connect(this.sfxGain);
         src.start(t);
         src.stop(t + 0.06);
     }
@@ -347,7 +357,7 @@ export class MusicManager {
         g.gain.setValueAtTime(0.1, t);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
         osc.connect(g);
-        g.connect(this.masterGain);
+        g.connect(this.sfxGain);
         osc.start(t);
         osc.stop(t + 0.2);
     }
@@ -363,7 +373,7 @@ export class MusicManager {
         g.gain.setValueAtTime(0.12, t);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
         src.connect(g);
-        g.connect(this.masterGain);
+        g.connect(this.sfxGain);
         src.start(t);
         src.stop(t + 0.04);
         const osc = this.ctx.createOscillator();
@@ -373,7 +383,7 @@ export class MusicManager {
         g2.gain.setValueAtTime(0.15, t);
         g2.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
         osc.connect(g2);
-        g2.connect(this.masterGain);
+        g2.connect(this.sfxGain);
         osc.start(t);
         osc.stop(t + 0.12);
     }
@@ -387,7 +397,7 @@ export class MusicManager {
         g.gain.setValueAtTime(0.08, t);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
         osc.connect(g);
-        g.connect(this.masterGain);
+        g.connect(this.sfxGain);
         osc.start(t);
         osc.stop(t + 0.35);
     }
@@ -403,7 +413,7 @@ export class MusicManager {
             g.gain.setValueAtTime(0.1, start);
             g.gain.exponentialRampToValueAtTime(0.001, start + 0.2);
             osc.connect(g);
-            g.connect(this.masterGain);
+            g.connect(this.sfxGain);
             osc.start(start);
             osc.stop(start + 0.2);
         });
@@ -418,8 +428,16 @@ export class MusicManager {
         g.gain.setValueAtTime(0.08, t);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
         osc.connect(g);
-        g.connect(this.masterGain);
+        g.connect(this.sfxGain);
         osc.start(t);
         osc.stop(t + 0.12);
+    }
+
+    setMusicVolume(value) {
+        if (this.musicGain) this.musicGain.gain.value = value;
+    }
+
+    setSfxVolume(value) {
+        if (this.sfxGain) this.sfxGain.gain.value = value;
     }
 }

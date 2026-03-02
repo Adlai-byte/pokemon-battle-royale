@@ -82,6 +82,66 @@
                 <label>Speed: <span id="speed-label">1.0x</span></label>
                 <input type="range" id="speed-slider" min="0.5" max="3" step="0.1" value="1">
             </div>
+
+            <div class="custom-rules-section">
+                <div class="custom-rules-header" id="custom-rules-toggle">
+                    Custom Rules <span class="collapse-arrow" id="collapse-arrow">&#9660;</span>
+                </div>
+                <div class="custom-rules-body" id="custom-rules-body">
+                    <div class="rule-row">
+                        <span class="rule-label">Text Size</span>
+                        <div class="roster-buttons text-size-buttons" id="text-size-buttons">
+                            <button data-size="small">Small</button>
+                            <button data-size="normal" class="active">Normal</button>
+                            <button data-size="large">Large</button>
+                        </div>
+                    </div>
+                    <div class="rule-row">
+                        <span class="rule-label">Music</span>
+                        <input type="range" id="music-volume" class="volume-slider" min="0" max="100" value="100">
+                    </div>
+                    <div class="rule-row">
+                        <span class="rule-label">SFX</span>
+                        <input type="range" id="sfx-volume" class="volume-slider" min="0" max="100" value="100">
+                    </div>
+                    <div class="rule-row">
+                        <span class="rule-label">Items</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rule-items" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="rule-row">
+                        <span class="rule-label">Weather</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rule-weather" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="rule-row rule-sub" id="weather-lock-row">
+                        <span class="rule-label">Weather Lock</span>
+                        <select class="rule-select" id="rule-weather-lock">
+                            <option value="random">Random</option>
+                            <option value="Rain">Rain</option>
+                            <option value="Sun">Sun</option>
+                            <option value="Sandstorm">Sandstorm</option>
+                            <option value="Hail">Hail</option>
+                        </select>
+                    </div>
+                    <div class="rule-row">
+                        <span class="rule-label">Arena Events</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rule-events" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="rule-row rule-type-filter">
+                        <span class="rule-label">Type Filter</span>
+                        <div class="type-badges" id="type-badges"></div>
+                    </div>
+                </div>
+            </div>
+
             <button id="start-btn" class="start-button">Start Battle Royale</button>
             <div class="nav-links">
                 <a href="info.html">Game Guide</a>
@@ -101,6 +161,8 @@
                 <input type="range" id="hud-speed-slider" min="0.5" max="3" step="0.1" value="1">
                 <button id="pause-btn">Pause</button>
                 <button id="mute-btn">Mute</button>
+                <label>Music: <input type="range" id="hud-music-volume" class="volume-slider" min="0" max="100" value="100"></label>
+                <label>SFX: <input type="range" id="hud-sfx-volume" class="volume-slider" min="0" max="100" value="100"></label>
                 <button id="cam-btn">Auto-Cam</button>
             </div>
         </div>

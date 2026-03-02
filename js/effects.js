@@ -195,11 +195,47 @@ class MoveLabel {
     }
 }
 
+class EffectivenessLabel {
+    constructor(x, y, text, color) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.life = 1200;
+        this.maxLife = 1200;
+        this.vy = -1.0;
+        this.alive = true;
+    }
+
+    update(dt) {
+        this.y += this.vy * (dt / 16);
+        this.life -= dt;
+        if (this.life <= 0) this.alive = false;
+    }
+
+    draw(ctx) {
+        const alpha = Math.max(0, this.life / this.maxLife);
+        const progress = 1 - alpha;
+        const scale = 0.6 + progress * 0.5;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.font = `bold ${Math.round(14 * scale)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.strokeText(this.text, this.x, this.y);
+        ctx.fillStyle = this.color;
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+    }
+}
+
 export class EffectsManager {
     constructor() {
         this.particles = [];
         this.damageNumbers = [];
         this.moveLabels = [];
+        this.effectivenessLabels = [];
         this.beams = [];
         this.rings = [];
         this.screenShake = { x: 0, y: 0, intensity: 0, duration: 0 };
@@ -231,6 +267,11 @@ export class EffectsManager {
             if (!this.moveLabels[i].alive) this.moveLabels.splice(i, 1);
         }
 
+        for (let i = this.effectivenessLabels.length - 1; i >= 0; i--) {
+            this.effectivenessLabels[i].update(dt);
+            if (!this.effectivenessLabels[i].alive) this.effectivenessLabels.splice(i, 1);
+        }
+
         if (this.screenShake.duration > 0) {
             this.screenShake.duration -= dt;
             const factor = this.screenShake.duration > 0 ? this.screenShake.intensity : 0;
@@ -249,6 +290,7 @@ export class EffectsManager {
         ctx.globalAlpha = 1;
         for (const d of this.damageNumbers) d.draw(ctx);
         for (const m of this.moveLabels) m.draw(ctx);
+        for (const e of this.effectivenessLabels) e.draw(ctx);
     }
 
     spawnAttackEffect(x, y, type) {
@@ -480,6 +522,58 @@ export class EffectsManager {
                 }
                 break;
 
+            case 'dark':
+                // Shadow wisps curling upward
+                for (let i = 0; i < count; i++) {
+                    this.particles.push(new Particle(
+                        x + (Math.random() - 0.5) * 25,
+                        y + (Math.random() - 0.5) * 25,
+                        (Math.random() - 0.5) * 2,
+                        -Math.random() * 3 - 1,
+                        Math.random() > 0.5 ? '#6a0dad' : '#1a0a2e',
+                        Math.random() * 6 + 3,
+                        600 + Math.random() * 300,
+                        -0.08
+                    ));
+                }
+                break;
+
+            case 'steel':
+                // Metallic sparks bouncing with gravity
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 5 + 2;
+                    this.particles.push(new Particle(
+                        x, y,
+                        Math.cos(angle) * speed,
+                        Math.sin(angle) * speed - 2,
+                        Math.random() > 0.5 ? '#c0c0c0' : '#ffffff',
+                        Math.random() * 3 + 2,
+                        300 + Math.random() * 200,
+                        0.2
+                    ));
+                }
+                // Central flash
+                this.particles.push(new Particle(x, y, 0, 0, '#ffffff', 15, 150));
+                break;
+
+            case 'fairy':
+                // Sparkly particles floating upward gently
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    this.particles.push(new Particle(
+                        x + (Math.random() - 0.5) * 20,
+                        y + (Math.random() - 0.5) * 20,
+                        Math.cos(angle) * (Math.random() * 2 + 0.5),
+                        -Math.random() * 2 - 0.5,
+                        Math.random() > 0.5 ? '#ff69b4' : '#ffffff',
+                        Math.random() * 4 + 2,
+                        500 + Math.random() * 300,
+                        -0.06
+                    ));
+                }
+                break;
+
             default:
                 for (let i = 0; i < count; i++) {
                     const angle = Math.random() * Math.PI * 2;
@@ -499,19 +593,45 @@ export class EffectsManager {
 
     spawnEliminationBurst(x, y, types) {
         const colors = TYPE_COLORS[types[0]] || TYPE_COLORS.normal;
-        for (let i = 0; i < 30; i++) {
-            const angle = (i / 30) * Math.PI * 2;
-            const speed = Math.random() * 6 + 3;
+        const colors2 = types[1] ? (TYPE_COLORS[types[1]] || colors) : colors;
+
+        // Initial white flash particle
+        this.particles.push(new Particle(x, y, 0, 0, '#ffffff', 25, 200));
+
+        // 20 slow-expanding type-colored particles
+        for (let i = 0; i < 20; i++) {
+            const angle = (i / 20) * Math.PI * 2;
+            const speed = Math.random() * 3 + 1.5;
             this.particles.push(new Particle(
                 x, y,
                 Math.cos(angle) * speed,
                 Math.sin(angle) * speed,
-                Math.random() > 0.3 ? colors.primary : colors.secondary,
-                Math.random() * 5 + 3,
-                600 + Math.random() * 400,
-                0.08
+                Math.random() > 0.3 ? colors.primary : colors2.secondary,
+                Math.random() * 6 + 4,
+                800 + Math.random() * 400,
+                0.03
             ));
         }
+
+        // 40 fast radial burst particles
+        for (let i = 0; i < 40; i++) {
+            const angle = (i / 40) * Math.PI * 2 + Math.random() * 0.2;
+            const speed = Math.random() * 7 + 4;
+            this.particles.push(new Particle(
+                x + (Math.random() - 0.5) * 8,
+                y + (Math.random() - 0.5) * 8,
+                Math.cos(angle) * speed,
+                Math.sin(angle) * speed,
+                Math.random() > 0.4 ? colors.primary : colors.secondary,
+                Math.random() * 4 + 2,
+                500 + Math.random() * 300,
+                0.1
+            ));
+        }
+
+        // 2 expanding ring effects in type colors
+        this.rings.push(new RingEffect(x, y, colors.primary, 80));
+        this.rings.push(new RingEffect(x, y, colors2.secondary, 55));
     }
 
     spawnConfetti(x, y) {
@@ -543,7 +663,10 @@ export class EffectsManager {
     }
 
     shake(intensity = 8, duration = 200) {
-        // Disabled for now
+        if (intensity >= this.screenShake.intensity) {
+            this.screenShake.intensity = intensity;
+            this.screenShake.duration = duration;
+        }
     }
 
     // Floating move name label
@@ -554,6 +677,27 @@ export class EffectsManager {
             y,
             moveName,
             colors.primary
+        ));
+    }
+
+    addEffectivenessLabel(x, y, multiplier) {
+        if (multiplier === 1) return;
+        let text, color;
+        if (multiplier > 1) {
+            text = 'Super Effective!';
+            color = '#44ff44';
+        } else if (multiplier > 0) {
+            text = 'Not Very Effective...';
+            color = '#cc8833';
+        } else {
+            text = 'No Effect!';
+            color = '#ff4444';
+        }
+        this.effectivenessLabels.push(new EffectivenessLabel(
+            x + (Math.random() - 0.5) * 10,
+            y - 50,
+            text,
+            color
         ));
     }
 

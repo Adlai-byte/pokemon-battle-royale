@@ -1,3 +1,5 @@
+html { font-size: calc(16px * var(--text-scale, 1)); }
+
 * {
     margin: 0;
     padding: 0;
@@ -204,6 +206,170 @@ input[type="range"] {
 .start-button:hover {
     background: #ff5577;
     border-color: #e94560;
+}
+
+/* =========== Volume Slider & Text Size =========== */
+.volume-slider {
+    width: 120px;
+    accent-color: #e94560;
+}
+
+.text-size-buttons {
+    gap: 4px;
+}
+
+.text-size-buttons button {
+    padding: 4px 10px;
+    font-size: 0.5rem;
+}
+
+/* =========== Custom Rules =========== */
+.custom-rules-section {
+    margin-top: 16px;
+    border: 2px solid #333;
+    background: #12121e;
+}
+
+.custom-rules-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    color: #e94560;
+    background: #16162a;
+    user-select: none;
+}
+
+.custom-rules-header:hover {
+    background: #1e1e3a;
+}
+
+.collapse-arrow {
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+}
+
+.collapse-arrow.collapsed {
+    transform: rotate(-90deg);
+}
+
+.custom-rules-body {
+    padding: 8px 14px 14px;
+}
+
+.custom-rules-body.collapsed {
+    display: none;
+}
+
+.rule-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #222;
+}
+
+.rule-row:last-child {
+    border-bottom: none;
+}
+
+.rule-row.rule-sub {
+    padding-left: 16px;
+}
+
+.rule-row.rule-type-filter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.rule-label {
+    font-size: 0.6rem;
+    color: #c0c0d0;
+}
+
+/* Toggle switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #333;
+    transition: background 0.2s;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background: #888;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: #e94560;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+    background: #fff;
+}
+
+/* Rule select dropdown */
+.rule-select {
+    background: #1a1a2e;
+    border: 2px solid #333;
+    color: #fff;
+    padding: 4px 8px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    cursor: pointer;
+}
+
+.rule-select:focus {
+    border-color: #e94560;
+    outline: none;
+}
+
+/* Type badges */
+.type-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.type-badge {
+    padding: 3px 8px;
+    font-size: 0.45rem;
+    font-family: 'Press Start 2P', monospace;
+    border: 2px solid transparent;
+    cursor: pointer;
+    color: #fff;
+    text-transform: uppercase;
+    transition: opacity 0.15s;
+    user-select: none;
+}
+
+.type-badge.disabled {
+    opacity: 0.3;
+    border-color: #555;
 }
 
 /* =========== HUD Layout (non-overlapping) =========== */

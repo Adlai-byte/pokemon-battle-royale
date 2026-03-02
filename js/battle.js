@@ -394,6 +394,7 @@ export class BattleEngine {
         defender.triggerKnockback(attacker.x, attacker.y);
         this.effects.spawnAttackEffect(defender.x, defender.y, move.type);
         this.effects.addDamageNumber(defender.x, defender.y, damage, typeMultiplier > 1);
+        this.effects.addEffectivenessLabel(defender.x, defender.y, typeMultiplier);
         this.effects.addMoveLabel(attacker.x, attacker.y - 45, move.name, move.type);
         // Ability: contact punish
         this._applyAbilityOnTakeDamage(attacker, defender);
@@ -467,6 +468,7 @@ export class BattleEngine {
                 bystander.triggerHitFlash();
                 bystander.triggerKnockback(origin.x, origin.y);
                 this.effects.addDamageNumber(bystander.x, bystander.y, bDmg, bMult > 1);
+                this.effects.addEffectivenessLabel(bystander.x, bystander.y, bMult);
                 this.effects.spawnAttackEffect(bystander.x, bystander.y, move.type);
                 // AOE damage also charges energy
                 bystander.gainEnergy(ENERGY_BASE_ON_HIT + (bDmg / bystander.maxHp) * ENERGY_DAMAGE_SCALE);

@@ -1,5 +1,5 @@
 // js/ui.js - Settings panel, HUD, event log, elimination banners, betting
-import { getSpriteUrl } from './data.js';
+import { getSpriteUrl, TYPE_COLORS } from './data.js';
 import { POKEMON_DATA } from './data.js';
 
 export class UIManager {
@@ -62,6 +62,24 @@ export class UIManager {
         this.onBettingConfirm = null;
         this.onNextRound = null;
         this.onCustomRosterConfirm = null;
+        this.onMusicVolume = null;
+        this.onSfxVolume = null;
+
+        // Text size & volume controls
+        this.textSizeButtons = document.querySelectorAll('#text-size-buttons button');
+        this.musicVolumeSlider = document.getElementById('music-volume');
+        this.sfxVolumeSlider = document.getElementById('sfx-volume');
+        this.hudMusicSlider = document.getElementById('hud-music-volume');
+        this.hudSfxSlider = document.getElementById('hud-sfx-volume');
+
+        // Custom battle rules
+        this.customRules = {
+            itemsEnabled: true,
+            weatherEnabled: true,
+            arenaEventsEnabled: true,
+            weatherLock: 'random',
+            typeFilter: new Set(), // stores DISABLED types; empty = all allowed
+        };
 
         this._setupEventListeners();
     }
@@ -108,6 +126,62 @@ export class UIManager {
                 this.muteBtn.textContent = muted ? 'Unmute' : 'Mute';
             }
         });
+
+        // Text size buttons
+        this.textSizeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.textSizeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this._applyTextSize(btn.dataset.size);
+            });
+        });
+
+        // Music volume sliders (settings + HUD sync)
+        this.musicVolumeSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            this.hudMusicSlider.value = val;
+            if (this.onMusicVolume) this.onMusicVolume(val / 100);
+            localStorage.setItem('pokemonBRMusicVolume', val);
+        });
+        this.hudMusicSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            this.musicVolumeSlider.value = val;
+            if (this.onMusicVolume) this.onMusicVolume(val / 100);
+            localStorage.setItem('pokemonBRMusicVolume', val);
+        });
+
+        // SFX volume sliders (settings + HUD sync)
+        this.sfxVolumeSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            this.hudSfxSlider.value = val;
+            if (this.onSfxVolume) this.onSfxVolume(val / 100);
+            localStorage.setItem('pokemonBRSfxVolume', val);
+        });
+        this.hudSfxSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            this.sfxVolumeSlider.value = val;
+            if (this.onSfxVolume) this.onSfxVolume(val / 100);
+            localStorage.setItem('pokemonBRSfxVolume', val);
+        });
+
+        // Load persisted text size
+        const savedSize = localStorage.getItem('pokemonBRTextSize') || 'normal';
+        this._applyTextSize(savedSize);
+        this.textSizeButtons.forEach(b => {
+            b.classList.toggle('active', b.dataset.size === savedSize);
+        });
+
+        // Load persisted volume levels
+        const savedMusic = localStorage.getItem('pokemonBRMusicVolume');
+        if (savedMusic !== null) {
+            this.musicVolumeSlider.value = savedMusic;
+            this.hudMusicSlider.value = savedMusic;
+        }
+        const savedSfx = localStorage.getItem('pokemonBRSfxVolume');
+        if (savedSfx !== null) {
+            this.sfxVolumeSlider.value = savedSfx;
+            this.hudSfxSlider.value = savedSfx;
+        }
 
         this.camBtn?.addEventListener('click', () => {
             if (this.onCamToggle) this.onCamToggle();
@@ -160,6 +234,79 @@ export class UIManager {
         this.bracketNextBtn.addEventListener('click', () => {
             if (this.onNextRound) this.onNextRound();
         });
+
+        // --- Custom Rules ---
+        const rulesToggle = document.getElementById('custom-rules-toggle');
+        const rulesBody = document.getElementById('custom-rules-body');
+        const collapseArrow = document.getElementById('collapse-arrow');
+        if (rulesToggle && rulesBody) {
+            // Start collapsed
+            rulesBody.classList.add('collapsed');
+            collapseArrow.classList.add('collapsed');
+            rulesToggle.addEventListener('click', () => {
+                rulesBody.classList.toggle('collapsed');
+                collapseArrow.classList.toggle('collapsed');
+            });
+        }
+
+        const ruleItems = document.getElementById('rule-items');
+        if (ruleItems) {
+            ruleItems.addEventListener('change', () => {
+                this.customRules.itemsEnabled = ruleItems.checked;
+            });
+        }
+
+        const ruleWeather = document.getElementById('rule-weather');
+        const weatherLockRow = document.getElementById('weather-lock-row');
+        if (ruleWeather) {
+            ruleWeather.addEventListener('change', () => {
+                this.customRules.weatherEnabled = ruleWeather.checked;
+                if (weatherLockRow) weatherLockRow.style.display = ruleWeather.checked ? '' : 'none';
+            });
+        }
+
+        const ruleWeatherLock = document.getElementById('rule-weather-lock');
+        if (ruleWeatherLock) {
+            ruleWeatherLock.addEventListener('change', () => {
+                this.customRules.weatherLock = ruleWeatherLock.value;
+            });
+        }
+
+        const ruleEvents = document.getElementById('rule-events');
+        if (ruleEvents) {
+            ruleEvents.addEventListener('change', () => {
+                this.customRules.arenaEventsEnabled = ruleEvents.checked;
+            });
+        }
+
+        // Generate type badges dynamically
+        const typeBadgesContainer = document.getElementById('type-badges');
+        if (typeBadgesContainer) {
+            for (const typeName of Object.keys(TYPE_COLORS)) {
+                const badge = document.createElement('span');
+                badge.className = 'type-badge';
+                badge.textContent = typeName;
+                badge.style.backgroundColor = TYPE_COLORS[typeName].primary;
+                badge.dataset.type = typeName;
+                badge.addEventListener('click', () => {
+                    if (this.customRules.typeFilter.has(typeName)) {
+                        this.customRules.typeFilter.delete(typeName);
+                        badge.classList.remove('disabled');
+                    } else {
+                        this.customRules.typeFilter.add(typeName);
+                        badge.classList.add('disabled');
+                    }
+                });
+                typeBadgesContainer.appendChild(badge);
+            }
+        }
+    }
+
+    _applyTextSize(size) {
+        const scales = { small: 0.85, normal: 1.0, large: 1.2 };
+        const scale = scales[size] || 1.0;
+        document.documentElement.style.setProperty('--text-scale', scale);
+        localStorage.setItem('pokemonBRTextSize', size);
     }
 
     showSettings() {

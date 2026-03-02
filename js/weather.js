@@ -20,6 +20,11 @@ export class WeatherManager {
         this.weatherTimer = this._randomInterval(WEATHER_CHANGE_MIN, WEATHER_CHANGE_MAX);
         this.eventTimer = this._randomInterval(EVENT_INTERVAL_MIN, EVENT_INTERVAL_MAX);
 
+        // Custom rules config (set by main.js before battle)
+        this.weatherEnabled = true;
+        this.arenaEventsEnabled = true;
+        this.weatherLock = 'random';
+
         // Storm circle
         this.stormRadius = 600; // Start large (arena is 1200x800)
         this.stormTargetRadius = 600;
@@ -40,11 +45,24 @@ export class WeatherManager {
     }
 
     update(dt, pokemons, arenaWidth, arenaHeight, effects, onEvent) {
-        // Weather timer
-        this.weatherTimer -= dt;
-        if (this.weatherTimer <= 0) {
-            this._changeWeather(onEvent);
-            this.weatherTimer = this._randomInterval(WEATHER_CHANGE_MIN, WEATHER_CHANGE_MAX);
+        // Weather disabled: force Clear, skip timer
+        if (!this.weatherEnabled) {
+            if (this.currentWeather.name !== 'Clear') {
+                this.currentWeather = WEATHER_TYPES[0];
+            }
+        } else if (this.weatherLock !== 'random') {
+            // Weather locked: force locked type, skip random changes
+            const locked = WEATHER_TYPES.find(w => w.name === this.weatherLock);
+            if (locked && this.currentWeather !== locked) {
+                this.currentWeather = locked;
+            }
+        } else {
+            // Normal weather timer
+            this.weatherTimer -= dt;
+            if (this.weatherTimer <= 0) {
+                this._changeWeather(onEvent);
+                this.weatherTimer = this._randomInterval(WEATHER_CHANGE_MIN, WEATHER_CHANGE_MAX);
+            }
         }
 
         // Weather DOT (sandstorm/hail)
@@ -64,10 +82,12 @@ export class WeatherManager {
         }
 
         // Random arena events
-        this.eventTimer -= dt;
-        if (this.eventTimer <= 0) {
-            this._triggerRandomEvent(pokemons, arenaWidth, arenaHeight, effects, onEvent);
-            this.eventTimer = this._randomInterval(EVENT_INTERVAL_MIN, EVENT_INTERVAL_MAX);
+        if (this.arenaEventsEnabled) {
+            this.eventTimer -= dt;
+            if (this.eventTimer <= 0) {
+                this._triggerRandomEvent(pokemons, arenaWidth, arenaHeight, effects, onEvent);
+                this.eventTimer = this._randomInterval(EVENT_INTERVAL_MIN, EVENT_INTERVAL_MAX);
+            }
         }
 
         // Healing zone tick
@@ -364,5 +384,8 @@ export class WeatherManager {
         this.stormTargetRadius = 600;
         this.healZone = null;
         this.weatherParticles = [];
+        this.weatherEnabled = true;
+        this.arenaEventsEnabled = true;
+        this.weatherLock = 'random';
     }
 }

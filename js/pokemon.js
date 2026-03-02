@@ -111,6 +111,7 @@ export class Pokemon {
         // Elimination animation
         this.eliminating = false;
         this.elimTimer = 0;
+        this._elimFlash = 0;
 
         this._loadSprite();
     }
@@ -203,10 +204,26 @@ export class Pokemon {
 
         if (this.eliminating) {
             this.elimTimer += dt;
-            const progress = this.elimTimer / 500;
-            this.scale = Math.max(0, 1 - progress);
-            this.alpha = Math.max(0, 1 - progress);
-            if (progress >= 1) {
+            const t = this.elimTimer;
+            if (t < 150) {
+                // Phase 1: White flash, scale bumps to 1.1
+                const p = t / 150;
+                this._elimFlash = 1 - p * 0.5;
+                this.scale = 1 + p * 0.1;
+                this.alpha = 1;
+            } else if (t < 400) {
+                // Phase 2: Scale expands to 1.3, alpha fading
+                const p = (t - 150) / 250;
+                this._elimFlash = 0;
+                this.scale = 1.1 + p * 0.2;
+                this.alpha = 1 - p * 0.6;
+            } else if (t < 800) {
+                // Phase 3: Rapid collapse to 0
+                const p = (t - 400) / 400;
+                this._elimFlash = 0;
+                this.scale = Math.max(0, 1.3 * (1 - p * p));
+                this.alpha = Math.max(0, 0.4 * (1 - p));
+            } else {
                 this.alive = false;
             }
             return;
@@ -450,10 +467,19 @@ export class Pokemon {
             SPRITE_SIZE * effectiveScale, SPRITE_SIZE * effectiveScale
         );
 
-        // Hit flash overlay (simple red rect)
+        // Elimination white flash overlay
+        if (this._elimFlash > 0) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${this._elimFlash})`;
+            ctx.fillRect(
+                drawX - halfSize, drawY - halfSize,
+                SPRITE_SIZE * effectiveScale, SPRITE_SIZE * effectiveScale
+            );
+        }
+
+        // Hit flash overlay
         if (this.flashTimer > 0) {
-            const flashAlpha = (this.flashTimer / 200) * 0.4;
-            ctx.fillStyle = `rgba(255, 50, 50, ${flashAlpha})`;
+            const flashAlpha = (this.flashTimer / 200) * 0.6;
+            ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
             ctx.fillRect(
                 drawX - halfSize, drawY - halfSize,
                 SPRITE_SIZE * effectiveScale, SPRITE_SIZE * effectiveScale
