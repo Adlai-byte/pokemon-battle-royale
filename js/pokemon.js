@@ -508,7 +508,14 @@ export class Pokemon {
             ctx.fillStyle = 'rgba(0,0,0,0.6)';
             ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
 
-            if (hpPercent > 0.5) {
+            if (this._isPlayerTeam === false) {
+                // Enemy in endless mode: red-tinted HP bar
+                if (hpPercent > 0.5) {
+                    ctx.fillStyle = `rgb(255, ${Math.floor(hpPercent * 100)}, ${Math.floor(hpPercent * 60)})`;
+                } else {
+                    ctx.fillStyle = `rgb(${Math.floor(120 + hpPercent * 135)}, ${Math.floor(hpPercent * 60)}, ${Math.floor(hpPercent * 40)})`;
+                }
+            } else if (hpPercent > 0.5) {
                 ctx.fillStyle = `rgb(${Math.floor((1 - hpPercent) * 2 * 255)}, 200, 50)`;
             } else {
                 ctx.fillStyle = `rgb(255, ${Math.floor(hpPercent * 2 * 200)}, 50)`;
