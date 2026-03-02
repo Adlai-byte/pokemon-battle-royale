@@ -910,27 +910,59 @@ export class UIManager {
         this.bracketScreen.classList.remove('hidden');
         this.bracketTitle.textContent = roundData.title || 'Round Results';
 
+        const lastIdx = roundData.lastCompletedIndex ?? -1;
         let html = '';
-        for (const group of roundData.groups) {
+
+        // Render completed groups
+        for (let gi = 0; gi < roundData.groups.length; gi++) {
+            const group = roundData.groups[gi];
+            const isLatest = gi === lastIdx;
             html += `<div class="bracket-group">`;
             html += `<div class="bracket-group-title">${group.name}</div>`;
+
+            let crushCount = 0;
             for (const p of group.pokemon) {
-                const cls = p.advanced ? 'bracket-pokemon advanced' : 'bracket-pokemon eliminated';
-                html += `<div class="${cls}">
-                    <img src="${getSpriteUrl(p.id)}" class="bracket-sprite" alt="${p.name}">
-                    <span class="bracket-poke-name">${p.name}</span>
-                    <span class="bracket-poke-stat">${p.kills || 0} kills</span>
-                </div>`;
+                if (isLatest) {
+                    if (p.advanced) {
+                        const advDelay = (crushCount * 0.15 + 0.3).toFixed(2);
+                        html += `<div class="bracket-pokemon advanced advance-animate" style="--advance-delay: ${advDelay}s">
+                            <img src="${getSpriteUrl(p.id)}" class="bracket-sprite" alt="${p.name}">
+                            <span class="bracket-poke-name">${p.name}</span>
+                            <span class="bracket-poke-stat">${p.kills || 0} kills</span>
+                        </div>`;
+                    } else {
+                        const crushDelay = (crushCount * 0.15).toFixed(2);
+                        crushCount++;
+                        html += `<div class="bracket-pokemon eliminated crush-animate" style="--crush-delay: ${crushDelay}s">
+                            <img src="${getSpriteUrl(p.id)}" class="bracket-sprite" alt="${p.name}">
+                            <span class="bracket-poke-name">${p.name}</span>
+                            <span class="bracket-poke-stat">${p.kills || 0} kills</span>
+                        </div>`;
+                    }
+                } else {
+                    const cls = p.advanced ? 'bracket-pokemon advanced' : 'bracket-pokemon eliminated';
+                    html += `<div class="${cls}">
+                        <img src="${getSpriteUrl(p.id)}" class="bracket-sprite" alt="${p.name}">
+                        <span class="bracket-poke-name">${p.name}</span>
+                        <span class="bracket-poke-stat">${p.kills || 0} kills</span>
+                    </div>`;
+                }
             }
             html += `</div>`;
         }
-        this.bracketContent.innerHTML = html;
 
-        if (roundData.isFinal) {
-            this.bracketNextBtn.textContent = 'View Winner';
-        } else {
-            this.bracketNextBtn.textContent = 'Next Round';
+        // Render upcoming group placeholders
+        const totalGroups = roundData.totalGroups || roundData.groups.length;
+        const completedCount = roundData.completedCount || roundData.groups.length;
+        for (let i = completedCount; i < totalGroups; i++) {
+            html += `<div class="bracket-group upcoming">`;
+            html += `<div class="bracket-group-title">Group ${i + 1}</div>`;
+            html += `<div class="bracket-upcoming-label">Upcoming...</div>`;
+            html += `</div>`;
         }
+
+        this.bracketContent.innerHTML = html;
+        this.bracketNextBtn.textContent = roundData.buttonLabel || (roundData.isFinal ? 'View Winner' : 'Next Round');
     }
 
     hideBracketScreen() {

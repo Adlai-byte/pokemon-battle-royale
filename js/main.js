@@ -337,14 +337,8 @@ class Game {
                 }
 
                 this.currentGroupIndex++;
-                if (this.currentGroupIndex < this.tournamentGroups.length) {
-                    // More groups to play
-                    setTimeout(() => this._startTournamentGroupBattle(), 1500);
-                } else {
-                    // All groups done, show bracket
-                    this.music.playTrack('menu');
-                    this._showBracketResults();
-                }
+                this.music.playTrack('menu');
+                this._showBracketResults();
             }, 1000);
         }
     }
@@ -352,17 +346,34 @@ class Game {
     _showBracketResults() {
         const isFinalRound = (this.tournamentMaxRounds === 2 && this.tournamentRound >= 2)
             || (this.tournamentMaxRounds === 3 && this.tournamentRound >= 3);
+        const moreGroupsThisRound = this.currentGroupIndex < this.tournamentGroups.length;
+        const allGroupsDone = !moreGroupsThisRound;
+
+        let title, buttonLabel;
+        if (isFinalRound && allGroupsDone) {
+            title = 'Grand Finals Complete!';
+            buttonLabel = 'View Winner';
+        } else if (allGroupsDone) {
+            title = `Round ${this.tournamentRound} Complete`;
+            buttonLabel = 'Next Round';
+        } else {
+            title = `Round ${this.tournamentRound} - Group ${this.currentGroupIndex} / ${this.tournamentGroups.length}`;
+            buttonLabel = 'Next Match';
+        }
 
         this.ui.showBracketScreen({
-            title: isFinalRound ? 'Grand Finals Complete!' : `Round ${this.tournamentRound} Complete`,
+            title,
             groups: this.tournamentResults,
-            isFinal: isFinalRound
+            isFinal: isFinalRound && allGroupsDone,
+            buttonLabel,
+            totalGroups: this.tournamentGroups.length,
+            completedCount: this.currentGroupIndex,
+            lastCompletedIndex: this.tournamentResults.length - 1
         });
 
-        if (isFinalRound) {
+        if (isFinalRound && allGroupsDone) {
             this.ui.onNextRound = () => {
                 this.ui.hideBracketScreen();
-                // Find the winner from the last group
                 const lastGroup = this.tournamentResults[this.tournamentResults.length - 1];
                 const winnerId = lastGroup?.pokemon?.[0]?.id;
                 const winnerPoke = this.pokemons.find(p => p.originalId === winnerId) || this.pokemons.find(p => p.alive);
@@ -374,10 +385,15 @@ class Game {
                     this.ui.showSettings();
                 }
             };
-        } else {
+        } else if (allGroupsDone) {
             this.ui.onNextRound = () => {
                 this.ui.hideBracketScreen();
                 this._advanceToNextRound();
+            };
+        } else {
+            this.ui.onNextRound = () => {
+                this.ui.hideBracketScreen();
+                this._startTournamentGroupBattle();
             };
         }
     }
@@ -661,10 +677,10 @@ class Game {
     }
 
     _showEndlessReplacementDraft() {
-        // Remove dead team members from data
+        // Remove dead team members from data (only once, before any picks)
         const aliveData = [];
         const alivePokemon = [];
-        for (let i = 0; i < this.endlessTeamData.length; i++) {
+        for (let i = 0; i < this.endlessTeamPokemon.length; i++) {
             const p = this.endlessTeamPokemon[i];
             if (p && p.alive) {
                 aliveData.push(this.endlessTeamData[i]);
@@ -674,6 +690,10 @@ class Game {
         this.endlessTeamData = aliveData;
         this.endlessTeamPokemon = alivePokemon;
 
+        this._showEndlessReplacementPick();
+    }
+
+    _showEndlessReplacementPick() {
         if (this.endlessTeamData.length >= this.endlessTeamSize) {
             this._startEndlessWave();
             return;
@@ -689,7 +709,7 @@ class Game {
                 this.endlessTeamData.push(picked);
             }
             if (this.endlessTeamData.length < this.endlessTeamSize && picked) {
-                this._showEndlessReplacementDraft();
+                this._showEndlessReplacementPick(); // No cleanup on recursion
             } else {
                 this._startEndlessWave();
             }

@@ -979,6 +979,43 @@ input[type="range"] {
     color: #a0a0c0;
 }
 
+.bracket-group.upcoming {
+    border-color: #222;
+    opacity: 0.5;
+}
+
+.bracket-upcoming-label {
+    font-size: 0.4rem;
+    color: #666;
+    padding: 12px 0;
+    font-style: italic;
+}
+
+@keyframes crushOut {
+    0%   { transform: scale(1); opacity: 1; filter: none; }
+    20%  { transform: scale(1.08) rotate(1deg); }
+    40%  { transform: scaleY(0.3) scaleX(1.3); filter: brightness(1.5); }
+    60%  { transform: scaleY(0.1) scaleX(1.4); opacity: 0.6; filter: brightness(0.5) grayscale(1); }
+    80%  { transform: scaleY(0.5) scaleX(1.05); opacity: 0.4; filter: grayscale(1); }
+    100% { transform: scale(1); opacity: 0.3; filter: grayscale(1); }
+}
+
+@keyframes advanceGlow {
+    0%   { background: transparent; border-left-color: transparent; }
+    50%  { background: rgba(76, 175, 80, 0.25); }
+    100% { background: rgba(76, 175, 80, 0.15); border-left-color: #4CAF50; }
+}
+
+.bracket-pokemon.eliminated.crush-animate {
+    animation: crushOut 0.7s ease-in-out forwards;
+    animation-delay: var(--crush-delay, 0s);
+}
+
+.bracket-pokemon.advanced.advance-animate {
+    animation: advanceGlow 0.5s ease-out forwards;
+    animation-delay: var(--advance-delay, 0s);
+}
+
 /* =========== Nav Links on Settings =========== */
 .nav-links {
     display: flex;
