@@ -27,6 +27,7 @@ class Game {
         this.running = false;
         this.lastTime = 0;
         this.winner = null;
+        this.slowMoFrames = 0;
 
         this.roster = [];
 
@@ -48,6 +49,7 @@ class Game {
         );
 
         this.battleEngine.weatherManager = this.weather;
+        this.battleEngine.onSlowMo = () => { this.slowMoFrames = 4; };
 
         this.ui.onStart = (rosterSize) => this._prepareRoster(rosterSize);
         this.ui.onBettingConfirm = () => this._startBattle();
@@ -352,7 +354,12 @@ class Game {
 
         const rawDt = timestamp - this.lastTime;
         this.lastTime = timestamp;
-        const dt = Math.min(rawDt, 50) * this.ui.speed;
+        let dt = Math.min(rawDt, 50) * this.ui.speed;
+
+        if (this.slowMoFrames > 0) {
+            dt *= 0.3;
+            this.slowMoFrames--;
+        }
 
         const alivePokemons = this.pokemons.filter(p => p.alive && !p.eliminating);
         const remaining = alivePokemons.length;
@@ -447,6 +454,21 @@ class Game {
         this.weather.draw(this.arena.ctx, this.arena.width, this.arena.height, timestamp);
         // Draw items BEFORE Pokemon (underneath)
         this.itemManager.draw(this.arena.ctx, timestamp);
+        // Last-3 spotlight: darken arena and spotlight remaining Pokemon
+        if (alivePokemons.length <= 3 && alivePokemons.length > 1) {
+            this.arena.ctx.save();
+            this.arena.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            this.arena.ctx.fillRect(0, 0, this.arena.width, this.arena.height);
+            for (const p of alivePokemons) {
+                this.arena.ctx.save();
+                this.arena.ctx.globalCompositeOperation = 'destination-out';
+                this.arena.ctx.beginPath();
+                this.arena.ctx.arc(p.x, p.y - 8, 50, 0, Math.PI * 2);
+                this.arena.ctx.fill();
+                this.arena.ctx.restore();
+            }
+            this.arena.ctx.restore();
+        }
         for (const p of this.pokemons) p.draw(this.arena.ctx, timestamp);
         this.effects.draw(this.arena.ctx);
         this.arena.endFrame();

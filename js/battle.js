@@ -68,6 +68,7 @@ export class BattleEngine {
         this.music = musicManager || null;
         this.lastCommentaryTime = 0;
         this.weatherManager = null; // Set by main.js
+        this.onSlowMo = null;
     }
 
     _tryCommentary(text, type) {
@@ -397,6 +398,7 @@ export class BattleEngine {
         if (typeMultiplier >= 1.5) this.music?.playSFX('superEffective');
         if (isCrit) this.effects.shake(12, 300);
         if (isCrit) this.music?.playSFX('crit');
+        if (isCrit && this.onSlowMo) this.onSlowMo();
 
         // Event log
         let msg = `${attacker.name} used ${move.name}!`;

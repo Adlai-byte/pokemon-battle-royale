@@ -253,7 +253,7 @@ export class EffectsManager {
 
     spawnAttackEffect(x, y, type) {
         const colors = TYPE_COLORS[type] || TYPE_COLORS.normal;
-        const count = 12;
+        const count = 18;
 
         switch (type) {
             case 'fire':

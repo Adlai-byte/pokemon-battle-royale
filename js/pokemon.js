@@ -35,6 +35,7 @@ export class Pokemon {
         const scale = getBstScaling(data.stats);
         this.maxHp = Math.round(data.stats.hp * HP_MULTIPLIER * scale);
         this.hp = this.maxHp;
+        this.displayHp = this.hp;
         this.attack = Math.round(data.stats.attack * scale);
         this.defense = Math.round(data.stats.defense * scale);
         this.spAtk = Math.round(data.stats.spAtk * scale);
@@ -196,6 +197,9 @@ export class Pokemon {
 
     update(dt, time, remainingCount = 999) {
         if (!this.alive) return;
+
+        const hpLerp = Math.min(1, dt * 0.008);
+        this.displayHp += (this.hp - this.displayHp) * hpLerp;
 
         if (this.eliminating) {
             this.elimTimer += dt;
@@ -426,6 +430,19 @@ export class Pokemon {
             ctx.restore();
         }
 
+        // Kill streak aura
+        if (this.alive && this.stats.kills >= 3) {
+            ctx.save();
+            const intensity = Math.min(this.stats.kills, 7) / 7;
+            const pulse = 0.5 + Math.sin(time * 0.004) * 0.3;
+            ctx.globalAlpha = intensity * pulse * 0.4;
+            ctx.fillStyle = this.stats.kills >= 5 ? '#ffd700' : '#f5a623';
+            ctx.beginPath();
+            ctx.arc(drawX, drawY - 8, 30 + intensity * 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
         // Draw sprite
         ctx.drawImage(
             this.sprite,
@@ -459,7 +476,7 @@ export class Pokemon {
             const barHeight = 5;
             const barX = drawX - barWidth / 2;
             const barY = drawY - halfSize - 14;
-            const hpPercent = this.hp / this.maxHp;
+            const hpPercent = this.displayHp / this.maxHp;
 
             // HP bar background
             ctx.fillStyle = 'rgba(0,0,0,0.6)';
