@@ -1,4 +1,4 @@
-// js/data.js - Gen 1 Pokemon data with types, base stats, type chart, and type colors
+// js/data.js - Gen 1 & Gen 2 Pokemon data with types, base stats, type chart, and type colors
 
 export const TYPE_CHART = {
     normal:   { rock: 0.5, ghost: 0, steel: 0.5 },
@@ -184,6 +184,107 @@ export const POKEMON_DATA = [
     { id: 149, name: "Dragonite", types: ["dragon","flying"], stats: { hp: 91, attack: 134, defense: 95, spAtk: 100, spDef: 100, speed: 80 }},
     { id: 150, name: "Mewtwo", types: ["psychic"], stats: { hp: 106, attack: 110, defense: 90, spAtk: 154, spDef: 90, speed: 130 }},
     { id: 151, name: "Mew", types: ["psychic"], stats: { hp: 100, attack: 100, defense: 100, spAtk: 100, spDef: 100, speed: 100 }},
+    // Gen 2 Pokemon (152-251)
+    { id: 152, name: "Chikorita", types: ["grass"], stats: { hp: 45, attack: 49, defense: 65, spAtk: 49, spDef: 65, speed: 45 }},
+    { id: 153, name: "Bayleef", types: ["grass"], stats: { hp: 60, attack: 62, defense: 80, spAtk: 63, spDef: 80, speed: 60 }},
+    { id: 154, name: "Meganium", types: ["grass"], stats: { hp: 80, attack: 82, defense: 100, spAtk: 83, spDef: 100, speed: 80 }},
+    { id: 155, name: "Cyndaquil", types: ["fire"], stats: { hp: 39, attack: 52, defense: 43, spAtk: 60, spDef: 50, speed: 65 }},
+    { id: 156, name: "Quilava", types: ["fire"], stats: { hp: 58, attack: 64, defense: 58, spAtk: 80, spDef: 65, speed: 80 }},
+    { id: 157, name: "Typhlosion", types: ["fire"], stats: { hp: 78, attack: 84, defense: 78, spAtk: 109, spDef: 85, speed: 100 }},
+    { id: 158, name: "Totodile", types: ["water"], stats: { hp: 50, attack: 65, defense: 64, spAtk: 44, spDef: 48, speed: 43 }},
+    { id: 159, name: "Croconaw", types: ["water"], stats: { hp: 65, attack: 80, defense: 80, spAtk: 59, spDef: 63, speed: 58 }},
+    { id: 160, name: "Feraligatr", types: ["water"], stats: { hp: 85, attack: 105, defense: 100, spAtk: 79, spDef: 83, speed: 78 }},
+    { id: 161, name: "Sentret", types: ["normal"], stats: { hp: 35, attack: 46, defense: 34, spAtk: 35, spDef: 45, speed: 20 }},
+    { id: 162, name: "Furret", types: ["normal"], stats: { hp: 85, attack: 76, defense: 64, spAtk: 45, spDef: 55, speed: 90 }},
+    { id: 163, name: "Hoothoot", types: ["normal","flying"], stats: { hp: 60, attack: 30, defense: 30, spAtk: 36, spDef: 56, speed: 50 }},
+    { id: 164, name: "Noctowl", types: ["normal","flying"], stats: { hp: 100, attack: 50, defense: 50, spAtk: 86, spDef: 96, speed: 70 }},
+    { id: 165, name: "Ledyba", types: ["bug","flying"], stats: { hp: 40, attack: 20, defense: 30, spAtk: 40, spDef: 80, speed: 55 }},
+    { id: 166, name: "Ledian", types: ["bug","flying"], stats: { hp: 55, attack: 35, defense: 50, spAtk: 55, spDef: 110, speed: 85 }},
+    { id: 167, name: "Spinarak", types: ["bug","poison"], stats: { hp: 40, attack: 60, defense: 40, spAtk: 40, spDef: 40, speed: 30 }},
+    { id: 168, name: "Ariados", types: ["bug","poison"], stats: { hp: 70, attack: 90, defense: 70, spAtk: 60, spDef: 70, speed: 40 }},
+    { id: 169, name: "Crobat", types: ["poison","flying"], stats: { hp: 85, attack: 90, defense: 80, spAtk: 70, spDef: 80, speed: 130 }},
+    { id: 170, name: "Chinchou", types: ["water","electric"], stats: { hp: 75, attack: 38, defense: 38, spAtk: 56, spDef: 56, speed: 67 }},
+    { id: 171, name: "Lanturn", types: ["water","electric"], stats: { hp: 125, attack: 58, defense: 58, spAtk: 76, spDef: 76, speed: 67 }},
+    { id: 172, name: "Pichu", types: ["electric"], stats: { hp: 20, attack: 40, defense: 15, spAtk: 35, spDef: 35, speed: 60 }},
+    { id: 173, name: "Cleffa", types: ["fairy"], stats: { hp: 50, attack: 25, defense: 28, spAtk: 45, spDef: 55, speed: 15 }},
+    { id: 174, name: "Igglybuff", types: ["normal","fairy"], stats: { hp: 90, attack: 30, defense: 15, spAtk: 40, spDef: 20, speed: 15 }},
+    { id: 175, name: "Togepi", types: ["fairy"], stats: { hp: 35, attack: 20, defense: 65, spAtk: 40, spDef: 65, speed: 20 }},
+    { id: 176, name: "Togetic", types: ["fairy","flying"], stats: { hp: 55, attack: 40, defense: 85, spAtk: 80, spDef: 105, speed: 40 }},
+    { id: 177, name: "Natu", types: ["psychic","flying"], stats: { hp: 40, attack: 50, defense: 45, spAtk: 70, spDef: 45, speed: 70 }},
+    { id: 178, name: "Xatu", types: ["psychic","flying"], stats: { hp: 65, attack: 75, defense: 70, spAtk: 95, spDef: 70, speed: 95 }},
+    { id: 179, name: "Mareep", types: ["electric"], stats: { hp: 55, attack: 40, defense: 40, spAtk: 65, spDef: 45, speed: 35 }},
+    { id: 180, name: "Flaaffy", types: ["electric"], stats: { hp: 70, attack: 55, defense: 55, spAtk: 80, spDef: 60, speed: 45 }},
+    { id: 181, name: "Ampharos", types: ["electric"], stats: { hp: 90, attack: 75, defense: 85, spAtk: 115, spDef: 90, speed: 55 }},
+    { id: 182, name: "Bellossom", types: ["grass"], stats: { hp: 75, attack: 80, defense: 95, spAtk: 90, spDef: 100, speed: 50 }},
+    { id: 183, name: "Marill", types: ["water","fairy"], stats: { hp: 70, attack: 20, defense: 50, spAtk: 20, spDef: 50, speed: 40 }},
+    { id: 184, name: "Azumarill", types: ["water","fairy"], stats: { hp: 100, attack: 50, defense: 80, spAtk: 60, spDef: 80, speed: 50 }},
+    { id: 185, name: "Sudowoodo", types: ["rock"], stats: { hp: 70, attack: 100, defense: 115, spAtk: 30, spDef: 65, speed: 30 }},
+    { id: 186, name: "Politoed", types: ["water"], stats: { hp: 90, attack: 75, defense: 75, spAtk: 90, spDef: 100, speed: 70 }},
+    { id: 187, name: "Hoppip", types: ["grass","flying"], stats: { hp: 35, attack: 35, defense: 40, spAtk: 35, spDef: 55, speed: 50 }},
+    { id: 188, name: "Skiploom", types: ["grass","flying"], stats: { hp: 55, attack: 45, defense: 50, spAtk: 45, spDef: 65, speed: 80 }},
+    { id: 189, name: "Jumpluff", types: ["grass","flying"], stats: { hp: 75, attack: 55, defense: 70, spAtk: 55, spDef: 95, speed: 110 }},
+    { id: 190, name: "Aipom", types: ["normal"], stats: { hp: 55, attack: 70, defense: 55, spAtk: 40, spDef: 55, speed: 85 }},
+    { id: 191, name: "Sunkern", types: ["grass"], stats: { hp: 30, attack: 30, defense: 30, spAtk: 30, spDef: 30, speed: 30 }},
+    { id: 192, name: "Sunflora", types: ["grass"], stats: { hp: 75, attack: 75, defense: 55, spAtk: 105, spDef: 85, speed: 30 }},
+    { id: 193, name: "Yanma", types: ["bug","flying"], stats: { hp: 65, attack: 65, defense: 45, spAtk: 75, spDef: 45, speed: 95 }},
+    { id: 194, name: "Wooper", types: ["water","ground"], stats: { hp: 55, attack: 45, defense: 45, spAtk: 25, spDef: 25, speed: 15 }},
+    { id: 195, name: "Quagsire", types: ["water","ground"], stats: { hp: 95, attack: 85, defense: 85, spAtk: 65, spDef: 65, speed: 35 }},
+    { id: 196, name: "Espeon", types: ["psychic"], stats: { hp: 65, attack: 65, defense: 60, spAtk: 130, spDef: 95, speed: 110 }},
+    { id: 197, name: "Umbreon", types: ["dark"], stats: { hp: 95, attack: 65, defense: 110, spAtk: 60, spDef: 130, speed: 65 }},
+    { id: 198, name: "Murkrow", types: ["dark","flying"], stats: { hp: 60, attack: 85, defense: 42, spAtk: 85, spDef: 42, speed: 91 }},
+    { id: 199, name: "Slowking", types: ["water","psychic"], stats: { hp: 95, attack: 75, defense: 80, spAtk: 100, spDef: 110, speed: 30 }},
+    { id: 200, name: "Misdreavus", types: ["ghost"], stats: { hp: 60, attack: 60, defense: 60, spAtk: 85, spDef: 85, speed: 85 }},
+    { id: 201, name: "Unown", types: ["psychic"], stats: { hp: 48, attack: 72, defense: 48, spAtk: 72, spDef: 48, speed: 48 }},
+    { id: 202, name: "Wobbuffet", types: ["psychic"], stats: { hp: 190, attack: 33, defense: 58, spAtk: 33, spDef: 58, speed: 33 }},
+    { id: 203, name: "Girafarig", types: ["normal","psychic"], stats: { hp: 70, attack: 80, defense: 65, spAtk: 90, spDef: 65, speed: 85 }},
+    { id: 204, name: "Pineco", types: ["bug"], stats: { hp: 50, attack: 65, defense: 90, spAtk: 35, spDef: 35, speed: 15 }},
+    { id: 205, name: "Forretress", types: ["bug","steel"], stats: { hp: 75, attack: 90, defense: 140, spAtk: 60, spDef: 60, speed: 40 }},
+    { id: 206, name: "Dunsparce", types: ["normal"], stats: { hp: 100, attack: 70, defense: 70, spAtk: 65, spDef: 65, speed: 45 }},
+    { id: 207, name: "Gligar", types: ["ground","flying"], stats: { hp: 65, attack: 75, defense: 105, spAtk: 35, spDef: 65, speed: 85 }},
+    { id: 208, name: "Steelix", types: ["steel","ground"], stats: { hp: 75, attack: 85, defense: 200, spAtk: 55, spDef: 65, speed: 30 }},
+    { id: 209, name: "Snubbull", types: ["fairy"], stats: { hp: 60, attack: 80, defense: 50, spAtk: 40, spDef: 40, speed: 30 }},
+    { id: 210, name: "Granbull", types: ["fairy"], stats: { hp: 90, attack: 120, defense: 75, spAtk: 60, spDef: 60, speed: 45 }},
+    { id: 211, name: "Qwilfish", types: ["water","poison"], stats: { hp: 65, attack: 95, defense: 85, spAtk: 55, spDef: 55, speed: 85 }},
+    { id: 212, name: "Scizor", types: ["bug","steel"], stats: { hp: 70, attack: 130, defense: 100, spAtk: 55, spDef: 80, speed: 65 }},
+    { id: 213, name: "Shuckle", types: ["bug","rock"], stats: { hp: 20, attack: 10, defense: 230, spAtk: 10, spDef: 230, speed: 5 }},
+    { id: 214, name: "Heracross", types: ["bug","fighting"], stats: { hp: 80, attack: 125, defense: 75, spAtk: 40, spDef: 95, speed: 85 }},
+    { id: 215, name: "Sneasel", types: ["dark","ice"], stats: { hp: 55, attack: 95, defense: 55, spAtk: 35, spDef: 75, speed: 115 }},
+    { id: 216, name: "Teddiursa", types: ["normal"], stats: { hp: 60, attack: 80, defense: 50, spAtk: 50, spDef: 50, speed: 40 }},
+    { id: 217, name: "Ursaring", types: ["normal"], stats: { hp: 90, attack: 130, defense: 75, spAtk: 75, spDef: 75, speed: 55 }},
+    { id: 218, name: "Slugma", types: ["fire"], stats: { hp: 40, attack: 40, defense: 40, spAtk: 70, spDef: 40, speed: 20 }},
+    { id: 219, name: "Magcargo", types: ["fire","rock"], stats: { hp: 60, attack: 50, defense: 120, spAtk: 90, spDef: 80, speed: 30 }},
+    { id: 220, name: "Swinub", types: ["ice","ground"], stats: { hp: 50, attack: 50, defense: 40, spAtk: 30, spDef: 30, speed: 50 }},
+    { id: 221, name: "Piloswine", types: ["ice","ground"], stats: { hp: 100, attack: 100, defense: 80, spAtk: 60, spDef: 60, speed: 50 }},
+    { id: 222, name: "Corsola", types: ["water","rock"], stats: { hp: 65, attack: 55, defense: 95, spAtk: 65, spDef: 95, speed: 35 }},
+    { id: 223, name: "Remoraid", types: ["water"], stats: { hp: 35, attack: 65, defense: 35, spAtk: 65, spDef: 35, speed: 65 }},
+    { id: 224, name: "Octillery", types: ["water"], stats: { hp: 75, attack: 105, defense: 75, spAtk: 105, spDef: 75, speed: 45 }},
+    { id: 225, name: "Delibird", types: ["ice","flying"], stats: { hp: 45, attack: 55, defense: 45, spAtk: 65, spDef: 45, speed: 75 }},
+    { id: 226, name: "Mantine", types: ["water","flying"], stats: { hp: 85, attack: 40, defense: 70, spAtk: 80, spDef: 140, speed: 70 }},
+    { id: 227, name: "Skarmory", types: ["steel","flying"], stats: { hp: 65, attack: 80, defense: 140, spAtk: 40, spDef: 70, speed: 70 }},
+    { id: 228, name: "Houndour", types: ["dark","fire"], stats: { hp: 45, attack: 60, defense: 30, spAtk: 80, spDef: 50, speed: 65 }},
+    { id: 229, name: "Houndoom", types: ["dark","fire"], stats: { hp: 75, attack: 90, defense: 50, spAtk: 110, spDef: 80, speed: 95 }},
+    { id: 230, name: "Kingdra", types: ["water","dragon"], stats: { hp: 75, attack: 95, defense: 95, spAtk: 95, spDef: 95, speed: 85 }},
+    { id: 231, name: "Phanpy", types: ["ground"], stats: { hp: 90, attack: 60, defense: 60, spAtk: 40, spDef: 40, speed: 40 }},
+    { id: 232, name: "Donphan", types: ["ground"], stats: { hp: 90, attack: 120, defense: 120, spAtk: 60, spDef: 60, speed: 50 }},
+    { id: 233, name: "Porygon2", types: ["normal"], stats: { hp: 85, attack: 80, defense: 90, spAtk: 105, spDef: 95, speed: 60 }},
+    { id: 234, name: "Stantler", types: ["normal"], stats: { hp: 73, attack: 95, defense: 62, spAtk: 85, spDef: 65, speed: 85 }},
+    { id: 235, name: "Smeargle", types: ["normal"], stats: { hp: 55, attack: 20, defense: 35, spAtk: 20, spDef: 45, speed: 75 }},
+    { id: 236, name: "Tyrogue", types: ["fighting"], stats: { hp: 35, attack: 35, defense: 35, spAtk: 35, spDef: 35, speed: 35 }},
+    { id: 237, name: "Hitmontop", types: ["fighting"], stats: { hp: 50, attack: 95, defense: 95, spAtk: 35, spDef: 110, speed: 70 }},
+    { id: 238, name: "Smoochum", types: ["ice","psychic"], stats: { hp: 45, attack: 30, defense: 15, spAtk: 85, spDef: 65, speed: 65 }},
+    { id: 239, name: "Elekid", types: ["electric"], stats: { hp: 45, attack: 63, defense: 37, spAtk: 65, spDef: 55, speed: 95 }},
+    { id: 240, name: "Magby", types: ["fire"], stats: { hp: 45, attack: 75, defense: 37, spAtk: 70, spDef: 55, speed: 83 }},
+    { id: 241, name: "Miltank", types: ["normal"], stats: { hp: 95, attack: 80, defense: 105, spAtk: 40, spDef: 70, speed: 100 }},
+    { id: 242, name: "Blissey", types: ["normal"], stats: { hp: 255, attack: 10, defense: 10, spAtk: 75, spDef: 135, speed: 55 }},
+    { id: 243, name: "Raikou", types: ["electric"], stats: { hp: 90, attack: 85, defense: 75, spAtk: 115, spDef: 100, speed: 115 }},
+    { id: 244, name: "Entei", types: ["fire"], stats: { hp: 115, attack: 115, defense: 85, spAtk: 90, spDef: 75, speed: 100 }},
+    { id: 245, name: "Suicune", types: ["water"], stats: { hp: 100, attack: 75, defense: 115, spAtk: 90, spDef: 115, speed: 85 }},
+    { id: 246, name: "Larvitar", types: ["rock","ground"], stats: { hp: 50, attack: 64, defense: 50, spAtk: 45, spDef: 50, speed: 41 }},
+    { id: 247, name: "Pupitar", types: ["rock","ground"], stats: { hp: 70, attack: 84, defense: 70, spAtk: 65, spDef: 70, speed: 51 }},
+    { id: 248, name: "Tyranitar", types: ["rock","dark"], stats: { hp: 100, attack: 134, defense: 110, spAtk: 95, spDef: 100, speed: 61 }},
+    { id: 249, name: "Lugia", types: ["psychic","flying"], stats: { hp: 106, attack: 90, defense: 130, spAtk: 90, spDef: 154, speed: 110 }},
+    { id: 250, name: "Ho-Oh", types: ["fire","flying"], stats: { hp: 106, attack: 130, defense: 90, spAtk: 110, spDef: 154, speed: 90 }},
+    { id: 251, name: "Celebi", types: ["psychic","grass"], stats: { hp: 100, attack: 100, defense: 100, spAtk: 100, spDef: 100, speed: 100 }},
 ];
 
 // Evolution chains: pokemonId -> { nextId, killsNeeded }
@@ -215,6 +316,7 @@ export const EVOLUTION_CHAINS = {
     37: { nextId: 38, killsNeeded: 1 },   // Vulpix -> Ninetales
     39: { nextId: 40, killsNeeded: 1 },   // Jigglypuff -> Wigglytuff
     41: { nextId: 42, killsNeeded: 1 },   // Zubat -> Golbat
+    42: { nextId: 169, killsNeeded: 3 },  // Golbat -> Crobat
     43: { nextId: 44, killsNeeded: 1 },   // Oddish -> Gloom
     44: { nextId: 45, killsNeeded: 3 },   // Gloom -> Vileplume
     46: { nextId: 47, killsNeeded: 1 },   // Paras -> Parasect
@@ -251,15 +353,58 @@ export const EVOLUTION_CHAINS = {
     104: { nextId: 105, killsNeeded: 1 }, // Cubone -> Marowak
     109: { nextId: 110, killsNeeded: 1 }, // Koffing -> Weezing
     111: { nextId: 112, killsNeeded: 1 }, // Rhyhorn -> Rhydon
+    95:  { nextId: 208, killsNeeded: 1 },  // Onix -> Steelix
+    113: { nextId: 242, killsNeeded: 1 },  // Chansey -> Blissey
     116: { nextId: 117, killsNeeded: 1 }, // Horsea -> Seadra
+    117: { nextId: 230, killsNeeded: 3 }, // Seadra -> Kingdra
     118: { nextId: 119, killsNeeded: 1 }, // Goldeen -> Seaking
     120: { nextId: 121, killsNeeded: 1 }, // Staryu -> Starmie
+    123: { nextId: 212, killsNeeded: 1 }, // Scyther -> Scizor
     129: { nextId: 130, killsNeeded: 1 }, // Magikarp -> Gyarados
     133: { nextId: 134, killsNeeded: 1 }, // Eevee -> Vaporeon
+    137: { nextId: 233, killsNeeded: 1 }, // Porygon -> Porygon2
     138: { nextId: 139, killsNeeded: 1 }, // Omanyte -> Omastar
     140: { nextId: 141, killsNeeded: 1 }, // Kabuto -> Kabutops
     147: { nextId: 148, killsNeeded: 1 }, // Dratini -> Dragonair
     148: { nextId: 149, killsNeeded: 3 }, // Dragonair -> Dragonite
+    // Gen 2 evolution chains
+    152: { nextId: 153, killsNeeded: 1 }, // Chikorita -> Bayleef
+    153: { nextId: 154, killsNeeded: 3 }, // Bayleef -> Meganium
+    155: { nextId: 156, killsNeeded: 1 }, // Cyndaquil -> Quilava
+    156: { nextId: 157, killsNeeded: 3 }, // Quilava -> Typhlosion
+    158: { nextId: 159, killsNeeded: 1 }, // Totodile -> Croconaw
+    159: { nextId: 160, killsNeeded: 3 }, // Croconaw -> Feraligatr
+    161: { nextId: 162, killsNeeded: 1 }, // Sentret -> Furret
+    163: { nextId: 164, killsNeeded: 1 }, // Hoothoot -> Noctowl
+    165: { nextId: 166, killsNeeded: 1 }, // Ledyba -> Ledian
+    167: { nextId: 168, killsNeeded: 1 }, // Spinarak -> Ariados
+    170: { nextId: 171, killsNeeded: 1 }, // Chinchou -> Lanturn
+    172: { nextId: 25, killsNeeded: 1 },  // Pichu -> Pikachu
+    173: { nextId: 35, killsNeeded: 1 },  // Cleffa -> Clefairy
+    174: { nextId: 39, killsNeeded: 1 },  // Igglybuff -> Jigglypuff
+    175: { nextId: 176, killsNeeded: 1 }, // Togepi -> Togetic
+    177: { nextId: 178, killsNeeded: 1 }, // Natu -> Xatu
+    179: { nextId: 180, killsNeeded: 1 }, // Mareep -> Flaaffy
+    180: { nextId: 181, killsNeeded: 3 }, // Flaaffy -> Ampharos
+    183: { nextId: 184, killsNeeded: 1 }, // Marill -> Azumarill
+    187: { nextId: 188, killsNeeded: 1 }, // Hoppip -> Skiploom
+    188: { nextId: 189, killsNeeded: 3 }, // Skiploom -> Jumpluff
+    191: { nextId: 192, killsNeeded: 1 }, // Sunkern -> Sunflora
+    194: { nextId: 195, killsNeeded: 1 }, // Wooper -> Quagsire
+    204: { nextId: 205, killsNeeded: 1 }, // Pineco -> Forretress
+    209: { nextId: 210, killsNeeded: 1 }, // Snubbull -> Granbull
+    216: { nextId: 217, killsNeeded: 1 }, // Teddiursa -> Ursaring
+    218: { nextId: 219, killsNeeded: 1 }, // Slugma -> Magcargo
+    220: { nextId: 221, killsNeeded: 1 }, // Swinub -> Piloswine
+    223: { nextId: 224, killsNeeded: 1 }, // Remoraid -> Octillery
+    228: { nextId: 229, killsNeeded: 1 }, // Houndour -> Houndoom
+    231: { nextId: 232, killsNeeded: 1 }, // Phanpy -> Donphan
+    236: { nextId: 237, killsNeeded: 1 }, // Tyrogue -> Hitmontop
+    238: { nextId: 124, killsNeeded: 1 }, // Smoochum -> Jynx
+    239: { nextId: 125, killsNeeded: 1 }, // Elekid -> Electabuzz
+    240: { nextId: 126, killsNeeded: 1 }, // Magby -> Magmar
+    246: { nextId: 247, killsNeeded: 1 }, // Larvitar -> Pupitar
+    247: { nextId: 248, killsNeeded: 3 }, // Pupitar -> Tyranitar
 };
 
 export function getSpriteUrl(id) {
