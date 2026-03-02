@@ -121,6 +121,10 @@ export class BattleEngine {
         let nearestDist = Infinity;
         for (const other of alive) {
             if (other === pokemon) continue;
+            // In endless mode, only target the opposing side
+            if (pokemon._isPlayerTeam !== undefined && other._isPlayerTeam !== undefined) {
+                if (pokemon._isPlayerTeam === other._isPlayerTeam) continue;
+            }
             const dist = pokemon.distanceTo(other);
             if (dist < nearestDist) {
                 nearestDist = dist;
@@ -443,11 +447,16 @@ export class BattleEngine {
         // AOE: hit nearby Pokemon
         if (move.aoe && allAlive) {
             const origin = animType === 'wave' ? attacker : defender;
-            const bystanders = allAlive.filter(p =>
-                p !== attacker && p !== defender &&
-                p.alive && !p.eliminating &&
-                p.distanceTo(origin) < AOE_RANGE
-            );
+            const bystanders = allAlive.filter(p => {
+                if (p === attacker || p === defender) return false;
+                if (!p.alive || p.eliminating) return false;
+                if (p.distanceTo(origin) >= AOE_RANGE) return false;
+                // In endless mode, AOE only hits enemies
+                if (attacker._isPlayerTeam !== undefined && p._isPlayerTeam !== undefined) {
+                    if (attacker._isPlayerTeam === p._isPlayerTeam) return false;
+                }
+                return true;
+            });
             for (const bystander of bystanders) {
                 const bMult = getTypeMultiplier(move.type, bystander.types);
                 const bDmg = Math.max(1, Math.round(damage * 0.6 * bMult));
@@ -817,7 +826,11 @@ export class BattleEngine {
         const alive = pokemons.filter(p => p.alive);
         for (const p of alive) {
             if (p.ability === 'Intimidate') {
-                const nearby = alive.filter(other => other !== p && other.distanceTo(p) < 150);
+                const nearby = alive.filter(other => {
+                    if (other === p || other.distanceTo(p) >= 150) return false;
+                    if (p._isPlayerTeam !== undefined && other._isPlayerTeam !== undefined && p._isPlayerTeam === other._isPlayerTeam) return false;
+                    return true;
+                });
                 for (const target of nearby) {
                     target.boostStat('atk', -1);
                 }
@@ -826,7 +839,11 @@ export class BattleEngine {
                 }
             }
             if (p.ability === 'Arena Trap') {
-                const nearby = alive.filter(other => other !== p && other.distanceTo(p) < 150);
+                const nearby = alive.filter(other => {
+                    if (other === p || other.distanceTo(p) >= 150) return false;
+                    if (p._isPlayerTeam !== undefined && other._isPlayerTeam !== undefined && p._isPlayerTeam === other._isPlayerTeam) return false;
+                    return true;
+                });
                 for (const target of nearby) {
                     target.boostStat('spd', -1);
                 }

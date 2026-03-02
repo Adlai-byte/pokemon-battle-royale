@@ -40,6 +40,7 @@
                 <div class="roster-buttons" id="mode-buttons">
                     <button data-mode="normal" class="active">Normal</button>
                     <button data-mode="tournament">Tournament</button>
+                    <button data-mode="endless">Endless</button>
                 </div>
             </div>
             <div class="setting-group hidden" id="tournament-format-group">
@@ -49,7 +50,25 @@
                     <button data-rounds="3">3 Rounds</button>
                 </div>
             </div>
-            <div class="setting-group">
+            <div class="setting-group hidden" id="endless-format-group">
+                <label>Team Size</label>
+                <div class="roster-buttons" id="team-size-buttons">
+                    <button data-size="1">1v1</button>
+                    <button data-size="2">2v2</button>
+                    <button data-size="3" class="active">3v3</button>
+                    <button data-size="4">4v4</button>
+                    <button data-size="5">5v5</button>
+                    <button data-size="6">6v6</button>
+                </div>
+            </div>
+            <div class="setting-group" id="roster-type-group">
+                <label>Roster Selection</label>
+                <div class="roster-buttons" id="roster-type-buttons">
+                    <button data-type="random" class="active">Random</button>
+                    <button data-type="custom">Custom Pick</button>
+                </div>
+            </div>
+            <div class="setting-group" id="roster-size-group">
                 <label>Roster Size</label>
                 <div class="roster-buttons" id="roster-buttons">
                     <button data-count="10">10</button>

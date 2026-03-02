@@ -31,6 +31,14 @@ class Game {
 
         this.roster = [];
 
+        // Endless state
+        this.endlessMode = false;
+        this.endlessWave = 0;
+        this.endlessTeamSize = 3;
+        this.endlessTeamData = [];
+        this.endlessTeamPokemon = [];
+        this.endlessScore = 0;
+
         // Tournament state
         this.tournamentMode = false;
         this.tournamentRound = 0;
@@ -51,7 +59,13 @@ class Game {
         this.battleEngine.weatherManager = this.weather;
         this.battleEngine.onSlowMo = () => { this.slowMoFrames = 4; };
 
-        this.ui.onStart = (rosterSize) => this._prepareRoster(rosterSize);
+        this.ui.onStart = (rosterSize) => {
+            if (this.ui.selectedMode === 'endless') {
+                this._startEndlessMode();
+            } else {
+                this._prepareRoster(rosterSize);
+            }
+        };
         this.ui.onBettingConfirm = () => this._startBattle();
         this.ui.onPlayAgain = () => {
             this.arena.resetCamera();
@@ -61,6 +75,12 @@ class Game {
             this.tournamentGroups = [];
             this.tournamentResults = [];
             this.tournamentAdvancers = [];
+            this.endlessMode = false;
+            this.endlessWave = 0;
+            this.endlessTeamData = [];
+            this.endlessTeamPokemon = [];
+            this.endlessScore = 0;
+            this.ui.hideWaveIndicator();
             // Move canvas back to body for settings screen background
             document.body.insertBefore(this.canvasEl, document.body.firstChild);
             this.arena.resize();
@@ -89,16 +109,32 @@ class Game {
     }
 
     _prepareRoster(rosterSize) {
-        // Only base-form Pokemon, no duplicates
         const clamped = Math.min(rosterSize, BASE_FORM_POKEMON.length);
-        const shuffled = [...BASE_FORM_POKEMON].sort(() => Math.random() - 0.5);
-        this.roster = shuffled.slice(0, clamped);
 
         this.tournamentMode = this.ui.selectedMode === 'tournament';
         this.tournamentMaxRounds = this.ui.selectedTournamentRounds;
         this.tournamentRound = 0;
         this.tournamentResults = [];
         this.tournamentAdvancers = [];
+
+        // Custom roster pick
+        if (this.ui.selectedRosterType === 'custom' && this.ui.selectedMode !== 'endless') {
+            this.ui.onCustomRosterConfirm = (roster) => {
+                this.roster = roster;
+                if (this.tournamentMode) {
+                    this._prepareTournament(roster.length);
+                } else {
+                    this.music.playTrack('betting');
+                    this.ui.showBettingScreen(this.roster);
+                }
+            };
+            this.ui.showCustomRosterScreen(BASE_FORM_POKEMON, clamped);
+            return;
+        }
+
+        // Random roster (default)
+        const shuffled = [...BASE_FORM_POKEMON].sort(() => Math.random() - 0.5);
+        this.roster = shuffled.slice(0, clamped);
 
         if (this.tournamentMode) {
             this._prepareTournament(clamped);
@@ -147,6 +183,10 @@ class Game {
     }
 
     _onElimination(attacker, defender) {
+        if (this.endlessMode) {
+            this._onEndlessElimination(attacker, defender);
+            return;
+        }
         if (this.tournamentMode) {
             this._onTournamentElimination(attacker, defender);
             return;
@@ -196,6 +236,26 @@ class Game {
         const group = this.tournamentGroups[this.currentGroupIndex];
         if (!group || group.length === 0) {
             this._showBracketResults();
+            return;
+        }
+
+        // Solo Pokemon gets an automatic bye
+        if (group.length === 1) {
+            const byeData = group[0];
+            this.tournamentResults.push({
+                groupIndex: this.currentGroupIndex,
+                name: `Group ${this.currentGroupIndex + 1}`,
+                pokemon: [{ id: byeData.id, name: byeData.name, kills: 0, advanced: true, bye: true }]
+            });
+            this.tournamentAdvancers.push(byeData);
+            this.ui.addEvent(`${byeData.name} gets a bye!`);
+            this.currentGroupIndex++;
+            if (this.currentGroupIndex < this.tournamentGroups.length) {
+                this._startTournamentGroupBattle();
+            } else {
+                this.music.playTrack('menu');
+                this._showBracketResults();
+            }
             return;
         }
 
@@ -345,6 +405,298 @@ class Game {
         this.currentGroupIndex = 0;
         this._startTournamentGroupBattle();
     }
+
+    // =========== Endless Mode ===========
+
+    _startEndlessMode() {
+        this.endlessMode = true;
+        this.endlessWave = 0;
+        this.endlessTeamSize = this.ui.selectedTeamSize;
+        this.endlessTeamData = [];
+        this.endlessTeamPokemon = [];
+        this.endlessScore = 0;
+        this.tournamentMode = false;
+        this._showEndlessDraft();
+    }
+
+    _showEndlessDraft() {
+        // Pick 3 random base-form options not already on team
+        const teamIds = new Set(this.endlessTeamData.map(d => d.id));
+        const pool = BASE_FORM_POKEMON.filter(d => !teamIds.has(d.id));
+        const shuffled = pool.sort(() => Math.random() - 0.5);
+        const options = shuffled.slice(0, 3);
+
+        this.ui.showDraftScreen(options, this.endlessTeamData, this.endlessTeamSize, (picked) => {
+            if (picked) {
+                this.endlessTeamData.push(picked);
+            }
+            if (this.endlessTeamData.length < this.endlessTeamSize) {
+                this._showEndlessDraft();
+            } else {
+                this._startEndlessWave();
+            }
+        });
+    }
+
+    _startEndlessWave() {
+        this.endlessWave++;
+        this.endlessScore += this.endlessWave;
+
+        this.arena.selectRandomArena();
+        const wrapper = document.querySelector('.arena-wrapper');
+        if (wrapper) {
+            wrapper.appendChild(this.canvasEl);
+            requestAnimationFrame(() => this.arena.resize());
+        }
+
+        // Create team Pokemon from data
+        this.endlessTeamPokemon = this.endlessTeamData.map(data => {
+            const p = new Pokemon(data, this.arena.width, this.arena.height);
+            p._endlessExp = data._endlessExp || 0;
+            p._isPlayerTeam = true;
+            // Restore HP from previous wave
+            if (data._savedHpRatio !== undefined && data._savedHpRatio > 0) {
+                p.hp = Math.max(1, Math.round(p.maxHp * data._savedHpRatio));
+                p.displayHp = p.hp;
+            }
+            // Place on left side
+            p.x = 100 + Math.random() * 100;
+            p.y = this.arena.height / 2 + (Math.random() - 0.5) * 200;
+            return p;
+        });
+
+        // Generate enemies
+        const enemies = this._generateEndlessEnemies();
+
+        // Combine into battle roster
+        this.pokemons = [...this.endlessTeamPokemon, ...enemies];
+        this.roster = this.pokemons.map(p => ({ id: p.id, name: p.name, types: p.types, stats: p.baseStats }));
+        this.totalCount = this.pokemons.length;
+        this.winner = null;
+        this.running = false;
+        this.lastTime = performance.now();
+        this.itemManager.clear();
+        this.weather.reset();
+
+        this.ui.showBattle(this.totalCount);
+        this.ui.updateWaveIndicator(this.endlessWave);
+        this.ui.addEvent(`--- Wave ${this.endlessWave} ---`);
+        this.ui.predictionState = null;
+
+        this.ui.showCountdown(() => {
+            this.running = true;
+            this.lastTime = performance.now();
+            this.music.playTrack('battle');
+            this.battleEngine.triggerEntryAbilities(this.pokemons);
+        });
+    }
+
+    _generateEndlessEnemies() {
+        const count = this.endlessTeamSize;
+        const wave = this.endlessWave;
+        const statMult = 0.9 + 0.1 * wave;
+
+        const enemies = [];
+        const allPokemon = [...POKEMON_DATA];
+        const shuffled = allPokemon.sort(() => Math.random() - 0.5);
+
+        let picked = 0;
+        for (const data of shuffled) {
+            if (picked >= count) break;
+
+            // Filter by wave difficulty
+            const isEvolved = EVOLUTION_CHAINS[data.id] === undefined &&
+                Object.values(EVOLUTION_CHAINS).some(c => c.nextId === data.id);
+            const isFinalStage = !EVOLUTION_CHAINS[data.id] && isEvolved;
+            const isBaseForm = !isEvolved;
+            const isMidStage = isEvolved && EVOLUTION_CHAINS[data.id];
+
+            if (wave <= 2 && !isBaseForm) continue;
+            if (wave <= 4 && isFinalStage && Math.random() > 0.3) continue;
+            if (wave >= 5 && isBaseForm && Math.random() > 0.6) continue;
+
+            // Create enemy with scaled stats
+            const scaledData = {
+                ...data,
+                stats: {
+                    hp: Math.round(data.stats.hp * statMult),
+                    attack: Math.round(data.stats.attack * statMult),
+                    defense: Math.round(data.stats.defense * statMult),
+                    spAtk: Math.round(data.stats.spAtk * statMult),
+                    spDef: Math.round(data.stats.spDef * statMult),
+                    speed: Math.round(data.stats.speed * statMult),
+                }
+            };
+
+            const p = new Pokemon(scaledData, this.arena.width, this.arena.height);
+            p._isPlayerTeam = false;
+            // Place on right side
+            p.x = this.arena.width - 100 - Math.random() * 100;
+            p.y = this.arena.height / 2 + (Math.random() - 0.5) * 200;
+            enemies.push(p);
+            picked++;
+        }
+
+        return enemies;
+    }
+
+    _onEndlessElimination(attacker, defender) {
+        const remaining = this.pokemons.filter(p => p.alive && !p.eliminating).length;
+        this.ui.updateRemaining(remaining, this.totalCount);
+        this.ui.addEvent(`${defender.name} eliminated by ${attacker.name}!`, true);
+        this.ui.showEliminationBanner(attacker.name, defender.name);
+        this.itemManager.spawnItem(defender.x, defender.y);
+
+        const teamAlive = this.endlessTeamPokemon.filter(p => p.alive && !p.eliminating);
+        const enemiesAlive = this.pokemons.filter(p => p.alive && !p.eliminating && !p._isPlayerTeam);
+
+        if (teamAlive.length === 0) {
+            // All player team dead — game over
+            setTimeout(() => {
+                this.running = false;
+                this.arena.resetCamera();
+                this.music.playTrack('menu');
+                this.ui.showEndlessGameOver(this.endlessWave, this.endlessScore, this.endlessTeamPokemon);
+            }, 1000);
+        } else if (enemiesAlive.length === 0) {
+            // All enemies dead — wave clear!
+            setTimeout(() => {
+                this.running = false;
+                this.arena.resetCamera();
+                this._endlessWaveClear();
+            }, 1000);
+        }
+    }
+
+    _endlessWaveClear() {
+        this.music.playTrack('menu');
+
+        // 30% heal for surviving team members
+        const alive = this.endlessTeamPokemon.filter(p => p.alive);
+        for (const p of alive) {
+            p.heal(0.3);
+        }
+
+        // Grant EXP and check evolution
+        for (const p of alive) {
+            p._endlessExp = (p._endlessExp || 0) + this.endlessWave;
+
+            // Check evolution
+            const chain = EVOLUTION_CHAINS[p.id];
+            if (chain) {
+                const needsFirst = p._endlessExp >= 3;
+                const needsSecond = p._endlessExp >= 8;
+                const evoData = POKEMON_DATA.find(d => d.id === chain.nextId);
+                if (evoData && (needsFirst || needsSecond)) {
+                    const oldName = p.name;
+                    // Store EXP before evolve (evolve resets some state)
+                    const savedExp = p._endlessExp;
+                    p.killCount = chain.killsNeeded; // Force evolution eligibility
+                    p.evolve(evoData);
+                    p._endlessExp = savedExp;
+                    this.ui.addEvent(`${oldName} evolved into ${p.name}!`);
+
+                    // Update team data to match evolved form
+                    const idx = this.endlessTeamData.findIndex(d => d.id !== p.id && d.name !== p.name);
+                    for (let i = 0; i < this.endlessTeamData.length; i++) {
+                        if (this.endlessTeamPokemon[i] === p) {
+                            this.endlessTeamData[i] = { ...evoData, _endlessExp: savedExp };
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Sync surviving team data back (HP state is in Pokemon objects)
+        for (let i = 0; i < this.endlessTeamData.length; i++) {
+            const p = this.endlessTeamPokemon[i];
+            if (p) {
+                this.endlessTeamData[i] = {
+                    ...POKEMON_DATA.find(d => d.id === p.id) || this.endlessTeamData[i],
+                    _endlessExp: p._endlessExp || 0,
+                    _savedHpRatio: p.alive ? p.hp / p.maxHp : 0
+                };
+            }
+        }
+
+        // Show upgrade screen
+        this._showEndlessUpgrade();
+    }
+
+    _showEndlessUpgrade() {
+        const UPGRADE_POOL = [
+            { name: 'Vitality', icon: '\u2764', description: '+20% Max HP, full heal', effect: (p) => { p.maxHp = Math.round(p.maxHp * 1.2); p.hp = p.maxHp; } },
+            { name: 'Power Crystal', icon: '\u2694', description: '+25% Attack', effect: (p) => { p.attack = Math.round(p.attack * 1.25); } },
+            { name: 'Iron Shell', icon: '\uD83D\uDEE1', description: '+25% Defense', effect: (p) => { p.defense = Math.round(p.defense * 1.25); } },
+            { name: 'Mystic Lens', icon: '\uD83D\uDD2E', description: '+25% Sp. Attack', effect: (p) => { p.spAtk = Math.round(p.spAtk * 1.25); } },
+            { name: 'Spirit Cloak', icon: '\uD83D\uDC7B', description: '+25% Sp. Defense', effect: (p) => { p.spDef = Math.round(p.spDef * 1.25); } },
+            { name: 'Quick Claw', icon: '\u26A1', description: '+25% Speed', effect: (p) => { p.speed = Math.round(p.speed * 1.25); } },
+            { name: 'Full Restore', icon: '\uD83D\uDC8A', description: 'Fully heal all team', targetAll: true, effect: (team) => { for (const p of team) if (p.alive) p.hp = p.maxHp; } },
+            { name: 'Focus Band', icon: '\uD83C\uDF1F', description: 'Survive one lethal hit', effect: (p) => { p.focusSash = true; } },
+            { name: 'Rare Candy', icon: '\uD83C\uDF6C', description: '+10% all stats', effect: (p) => { p.maxHp = Math.round(p.maxHp * 1.1); p.hp = Math.min(p.hp, p.maxHp); p.attack = Math.round(p.attack * 1.1); p.defense = Math.round(p.defense * 1.1); p.spAtk = Math.round(p.spAtk * 1.1); p.spDef = Math.round(p.spDef * 1.1); p.speed = Math.round(p.speed * 1.1); } },
+        ];
+
+        const shuffled = [...UPGRADE_POOL].sort(() => Math.random() - 0.5);
+        const options = shuffled.slice(0, 3);
+        const aliveTeam = this.endlessTeamPokemon.filter(p => p.alive);
+
+        this.ui.showUpgradeScreen(options, aliveTeam, (upgrade, target) => {
+            if (upgrade.targetAll) {
+                upgrade.effect(aliveTeam);
+                this.ui.addEvent(`Used ${upgrade.name} on the whole team!`);
+            } else if (target) {
+                upgrade.effect(target);
+                this.ui.addEvent(`${target.name} received ${upgrade.name}!`);
+            }
+
+            // Check if any team members were lost
+            const deadCount = this.endlessTeamPokemon.filter(p => !p.alive).length;
+            if (deadCount > 0) {
+                this._showEndlessReplacementDraft();
+            } else {
+                this._startEndlessWave();
+            }
+        });
+    }
+
+    _showEndlessReplacementDraft() {
+        // Remove dead team members from data
+        const aliveData = [];
+        const alivePokemon = [];
+        for (let i = 0; i < this.endlessTeamData.length; i++) {
+            const p = this.endlessTeamPokemon[i];
+            if (p && p.alive) {
+                aliveData.push(this.endlessTeamData[i]);
+                alivePokemon.push(p);
+            }
+        }
+        this.endlessTeamData = aliveData;
+        this.endlessTeamPokemon = alivePokemon;
+
+        if (this.endlessTeamData.length >= this.endlessTeamSize) {
+            this._startEndlessWave();
+            return;
+        }
+
+        const teamIds = new Set(this.endlessTeamData.map(d => d.id));
+        const pool = BASE_FORM_POKEMON.filter(d => !teamIds.has(d.id));
+        const shuffled = pool.sort(() => Math.random() - 0.5);
+        const options = shuffled.slice(0, 3);
+
+        this.ui.showDraftScreen(options, this.endlessTeamData, this.endlessTeamSize, (picked) => {
+            if (picked) {
+                this.endlessTeamData.push(picked);
+            }
+            if (this.endlessTeamData.length < this.endlessTeamSize && picked) {
+                this._showEndlessReplacementDraft();
+            } else {
+                this._startEndlessWave();
+            }
+        }, true);
+    }
+
+    // =========== End Endless Mode ===========
 
     _loop(timestamp) {
         requestAnimationFrame((t) => this._loop(t));

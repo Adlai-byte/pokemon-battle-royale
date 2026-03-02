@@ -1582,6 +1582,451 @@ input[type="range"] {
 .shop-card.selected { border-color: #f5a623; outline: 2px solid #f5a623; }
 
 /* =========== Mobile Game Layout =========== */
+/* =========== Wave Indicator =========== */
+.wave-indicator {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #f5a623;
+    padding: 3px 10px;
+    background: linear-gradient(135deg, #1a1808, #2a2010);
+    border: 2px solid #f5a623;
+}
+
+/* =========== Draft Screen =========== */
+#draft-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000ee;
+    pointer-events: auto;
+}
+
+.draft-container {
+    text-align: center;
+    max-width: 700px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.draft-subtitle {
+    color: #a0a0c0;
+    font-size: 0.65rem;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.draft-options {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.draft-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 20px;
+    border: 3px solid #333;
+    background: #0a0a1a;
+    cursor: pointer;
+    transition: background 0.1s, border-color 0.1s, transform 0.1s;
+    min-width: 160px;
+    flex: 1;
+    max-width: 200px;
+}
+
+.draft-card:hover {
+    border-color: #f5a623;
+    background: #1a1a2e;
+    transform: translateY(-4px);
+}
+
+.draft-card img {
+    width: 96px;
+    height: 96px;
+    image-rendering: pixelated;
+    margin-bottom: 8px;
+}
+
+.draft-card-name {
+    font-size: 0.7rem;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.draft-card-types {
+    font-size: 0.45rem;
+    color: #a0a0c0;
+    margin-bottom: 2px;
+}
+
+.draft-card-bst {
+    font-size: 0.4rem;
+    color: #888;
+}
+
+.draft-team {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.draft-team-member {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px;
+    background: #12121e;
+    border: 2px solid #4CAF50;
+}
+
+.draft-team-member img {
+    width: 40px;
+    height: 40px;
+    image-rendering: pixelated;
+}
+
+.draft-team-member span {
+    font-size: 0.4rem;
+    color: #ccc;
+    margin-top: 2px;
+}
+
+.draft-skip-btn {
+    background: #333 !important;
+    border-color: #555 !important;
+    margin-top: 12px;
+}
+
+/* =========== Upgrade Screen =========== */
+#upgrade-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000ee;
+    pointer-events: auto;
+}
+
+.upgrade-container {
+    text-align: center;
+    max-width: 700px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.upgrade-options {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.upgrade-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 20px;
+    border: 3px solid #333;
+    background: #0a0a1a;
+    cursor: pointer;
+    transition: background 0.1s, border-color 0.1s, transform 0.1s;
+    min-width: 160px;
+    flex: 1;
+    max-width: 200px;
+}
+
+.upgrade-card:hover {
+    border-color: #f5a623;
+    background: #1a1a2e;
+    transform: translateY(-4px);
+}
+
+.upgrade-card.selected {
+    border-color: #f5a623;
+    background: #1a1808;
+    outline: 3px solid #f5a623;
+}
+
+.upgrade-icon {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.upgrade-name {
+    font-size: 0.65rem;
+    color: #f5a623;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.upgrade-desc {
+    font-size: 0.45rem;
+    color: #a0a0c0;
+    line-height: 1.6;
+}
+
+.upgrade-team {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.upgrade-team-member {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    background: #12121e;
+    border: 2px solid #333;
+    cursor: default;
+    transition: border-color 0.1s;
+}
+
+.upgrade-team-member.selectable {
+    border-color: #f5a623;
+    cursor: pointer;
+}
+
+.upgrade-team-member.selectable:hover {
+    background: #1a1808;
+}
+
+.upgrade-team-member img {
+    width: 48px;
+    height: 48px;
+    image-rendering: pixelated;
+}
+
+.upgrade-member-name {
+    font-size: 0.45rem;
+    color: #ccc;
+    margin-top: 2px;
+}
+
+.upgrade-hp-bar {
+    width: 50px;
+    height: 4px;
+    background: #333;
+    margin-top: 4px;
+}
+
+.upgrade-hp-fill {
+    height: 100%;
+    background: #4CAF50;
+}
+
+/* =========== Endless Game Over =========== */
+#endless-gameover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000dd;
+    pointer-events: auto;
+}
+
+.endless-go-container {
+    text-align: center;
+    padding: 32px;
+}
+
+.endless-go-title {
+    font-size: 2rem;
+    color: #e94560;
+    margin-bottom: 16px;
+}
+
+.endless-go-stats {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.endless-go-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 24px;
+    background: #1a1a2e;
+    border: 2px solid #333;
+}
+
+.endless-go-label {
+    font-size: 0.5rem;
+    color: #a0a0c0;
+    margin-bottom: 4px;
+}
+
+.endless-go-value {
+    font-size: 1.2rem;
+    color: #f5a623;
+    font-weight: bold;
+}
+
+.endless-go-team {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.endless-go-member {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    background: #12121e;
+    border: 2px solid #333;
+}
+
+.endless-go-member.alive {
+    border-color: #4CAF50;
+}
+
+.endless-go-member.fainted {
+    opacity: 0.4;
+    border-color: #e94560;
+}
+
+.endless-go-member img {
+    width: 56px;
+    height: 56px;
+    image-rendering: pixelated;
+}
+
+.endless-go-member span {
+    font-size: 0.45rem;
+    color: #ccc;
+    margin-top: 2px;
+}
+
+/* =========== Custom Roster Screen =========== */
+#custom-roster-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000ee;
+    pointer-events: auto;
+}
+
+.custom-roster-container {
+    text-align: center;
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.custom-roster-container::-webkit-scrollbar { width: 4px; }
+.custom-roster-container::-webkit-scrollbar-thumb { background: #4CAF50; }
+
+.custom-roster-subtitle {
+    color: #a0a0c0;
+    font-size: 0.65rem;
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.custom-roster-counter {
+    font-size: 0.7rem;
+    color: #4CAF50;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.custom-roster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 6px;
+    padding: 6px;
+    margin-bottom: 16px;
+}
+
+.custom-roster-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 3px;
+    border: 3px solid #333;
+    background: #0a0a1a;
+    cursor: pointer;
+    transition: background 0.1s, border-color 0.1s, opacity 0.15s;
+    position: relative;
+}
+
+.custom-roster-card:hover {
+    border-color: #4CAF50;
+    background: #1a1a2e;
+}
+
+.custom-roster-card img {
+    width: 56px;
+    height: 56px;
+    image-rendering: pixelated;
+}
+
+.custom-roster-card.selected {
+    border-color: #4CAF50;
+    background: #0a1a0e;
+    outline: 3px solid #4CAF50;
+}
+
+.custom-roster-card.selected::after {
+    content: '\2713';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    color: #4CAF50;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.custom-roster-card.maxed {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.custom-roster-card.maxed:hover {
+    border-color: #333;
+    background: #0a0a1a;
+}
+
+.cr-name {
+    font-size: 0.55rem;
+    color: #ccc;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+
+.cr-types {
+    font-size: 0.4rem;
+    color: #888;
+    margin-top: 1px;
+}
+
+.custom-roster-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* =========== Mobile Game Layout =========== */
 @media (max-width: 900px) {
     .hud-main {
         flex-direction: column;
@@ -1626,13 +2071,21 @@ input[type="range"] {
         padding: 20px 16px;
         max-width: 95%;
     }
-    .betting-grid {
+    .betting-grid, .custom-roster-grid {
         grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
     }
-    .betting-card img {
+    .betting-card img, .custom-roster-card img {
         width: 44px;
         height: 44px;
     }
+    .custom-roster-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .draft-card { min-width: 120px; }
+    .draft-card img { width: 64px; height: 64px; }
+    .upgrade-card { min-width: 120px; }
+    .endless-go-title { font-size: 1.5rem; }
     .betting-name { font-size: 0.45rem; }
     .betting-actions {
         flex-direction: column;
@@ -1661,15 +2114,78 @@ input[type="range"] {
     .records-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    .victory-container h1 { font-size: 1.5rem; }
+    .victory-container h2 { font-size: 1rem; }
+    .page-container { padding: 16px 16px 60px; }
+    .bracket-container { padding: 16px; }
+    .bracket-group { max-width: 180px; min-width: 120px; }
+    .battle-stats { gap: 4px; }
+    .prediction-result { font-size: 0.55rem; }
+}
+
+@media (max-width: 768px) {
+    .settings-container { max-width: 98%; padding: 16px 12px; }
+    .hud-controls input[type="range"] { width: 50px; }
+    .hud-controls label { font-size: 0.5rem; }
+    .lb-table { font-size: 0.35rem; }
+    .lb-table th, .lb-table td { padding: 3px 4px; }
+    .type-chart-table th, .type-chart-table td { width: 20px; height: 18px; font-size: 0.25rem; }
+    .credit-item { gap: 10px; }
+    .credit-icon { font-size: 1rem; }
+    .bracket-group { max-width: 150px; min-width: 100px; }
+    .bracket-poke-name { font-size: 0.35rem; }
+    #cam-btn { font-size: 0.45rem; padding: 4px 10px; }
 }
 
 @media (max-width: 480px) {
-    .title { font-size: 1.25rem; }
     .hud-top { font-size: 0.45rem; }
     .leaderboard { max-height: 80px; font-size: 0.45rem; }
     .event-log { max-height: 70px; font-size: 0.4rem; }
     .lb-sprite { width: 20px; height: 20px; }
-    .betting-grid {
+    .betting-grid, .custom-roster-grid {
         grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
     }
+    .custom-roster-card img { width: 36px; height: 36px; }
+    .cr-name { font-size: 0.45rem; }
+    .draft-options { flex-direction: column; align-items: center; }
+    .draft-card { min-width: 100%; max-width: 100%; }
+    .draft-card img { width: 56px; height: 56px; }
+    .upgrade-options { flex-direction: column; align-items: center; }
+    .upgrade-card { min-width: 100%; max-width: 100%; }
+    .endless-go-title { font-size: 1.2rem; }
+    .endless-go-stats { gap: 12px; }
+    .wave-indicator { font-size: 0.5rem; }
+    .settings-container { padding: 12px 8px; }
+    .title { font-size: 1rem; }
+    .victory-container h1 { font-size: 1.2rem; }
+    .victory-container h2 { font-size: 0.75rem; }
+    #winner-sprite { width: 96px; height: 96px; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .page-container { padding: 10px 8px 50px; }
+    .page-title { font-size: 1rem; }
+    .record-value { font-size: 0.7rem; }
+    .record-label { font-size: 0.3rem; }
+    .type-chart-table th, .type-chart-table td { width: 16px; height: 14px; font-size: 0.2rem; }
+    .bracket-group { max-width: 110px; min-width: 80px; }
+    .bracket-poke-name { font-size: 0.3rem; }
+    .bracket-group-title { font-size: 0.35rem; }
+    .credit-name { font-size: 0.45rem; }
+    .credit-desc { font-size: 0.35rem; }
+    .shop-card-name { font-size: 0.35rem; }
+    .shop-action-btn { font-size: 0.3rem; }
+    .betting-card img { width: 36px; height: 36px; }
+    .start-button { font-size: 0.7rem; }
+    .share-btn { font-size: 0.55rem; }
+    .history-entry { font-size: 0.35rem; }
+    .prediction-stats { font-size: 0.35rem; }
+    .arena-wrapper { min-height: 250px; }
+    #cam-btn { font-size: 0.4rem; padding: 3px 8px; }
+}
+
+@media (max-width: 360px) {
+    .title { font-size: 0.85rem; }
+    .settings-container { padding: 8px 6px; }
+    .betting-grid, .custom-roster-grid { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); }
+    .betting-card img, .custom-roster-card img { width: 30px; height: 30px; }
+    .betting-name { font-size: 0.35rem; }
 }

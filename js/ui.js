@@ -48,12 +48,20 @@ export class UIManager {
 
         this.selectedMode = 'normal';
         this.selectedTournamentRounds = 2;
+        this.selectedRosterType = 'random';
+        this.rosterTypeButtons = document.querySelectorAll('#roster-type-buttons button');
+        this.rosterTypeGroup = document.getElementById('roster-type-group');
+        this.rosterSizeGroup = document.getElementById('roster-size-group');
+        this.endlessFormatGroup = document.getElementById('endless-format-group');
+        this.teamSizeButtons = document.querySelectorAll('#team-size-buttons button');
+        this.selectedTeamSize = 3;
 
         this.onStart = null;
         this.onPlayAgain = null;
         this.onMuteToggle = null;
         this.onBettingConfirm = null;
         this.onNextRound = null;
+        this.onCustomRosterConfirm = null;
 
         this._setupEventListeners();
     }
@@ -118,11 +126,10 @@ export class UIManager {
                 this.modeButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.selectedMode = btn.dataset.mode;
-                if (this.selectedMode === 'tournament') {
-                    this.tournamentFormatGroup.classList.remove('hidden');
-                } else {
-                    this.tournamentFormatGroup.classList.add('hidden');
-                }
+                this.tournamentFormatGroup.classList.toggle('hidden', this.selectedMode !== 'tournament');
+                this.endlessFormatGroup.classList.toggle('hidden', this.selectedMode !== 'endless');
+                this.rosterTypeGroup.classList.toggle('hidden', this.selectedMode === 'endless');
+                this.rosterSizeGroup.classList.toggle('hidden', this.selectedMode === 'endless');
             });
         });
 
@@ -131,6 +138,22 @@ export class UIManager {
                 this.formatButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.selectedTournamentRounds = parseInt(btn.dataset.rounds);
+            });
+        });
+
+        this.rosterTypeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.rosterTypeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.selectedRosterType = btn.dataset.type;
+            });
+        });
+
+        this.teamSizeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.teamSizeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.selectedTeamSize = parseInt(btn.dataset.size);
             });
         });
 
@@ -146,10 +169,24 @@ export class UIManager {
         this.bracketScreen.classList.add('hidden');
         const betting = document.getElementById('betting-screen');
         if (betting) betting.classList.add('hidden');
+        const customRoster = document.getElementById('custom-roster-screen');
+        if (customRoster) customRoster.classList.add('hidden');
+        const draftScreen = document.getElementById('draft-screen');
+        if (draftScreen) draftScreen.classList.add('hidden');
+        const upgradeScreen = document.getElementById('upgrade-screen');
+        if (upgradeScreen) upgradeScreen.classList.add('hidden');
+        const endlessGo = document.getElementById('endless-gameover');
+        if (endlessGo) endlessGo.classList.add('hidden');
+        this.hideWaveIndicator();
         this.eventLog.innerHTML = '';
         this.paused = false;
         this.pauseBtn.textContent = 'Pause';
         this.predictionState = null;
+        // Restore settings group visibility based on current mode
+        this.tournamentFormatGroup.classList.toggle('hidden', this.selectedMode !== 'tournament');
+        this.endlessFormatGroup.classList.toggle('hidden', this.selectedMode !== 'endless');
+        this.rosterTypeGroup.classList.toggle('hidden', this.selectedMode === 'endless');
+        this.rosterSizeGroup.classList.toggle('hidden', this.selectedMode === 'endless');
         this._displayPredictionStats();
         this._displayTopSpecies();
         this._displayBattleHistory();
@@ -160,6 +197,10 @@ export class UIManager {
         this.settingsScreen.classList.add('hidden');
         const betting = document.getElementById('betting-screen');
         if (betting) betting.classList.add('hidden');
+        const draftScreen = document.getElementById('draft-screen');
+        if (draftScreen) draftScreen.classList.add('hidden');
+        const upgradeScreen = document.getElementById('upgrade-screen');
+        if (upgradeScreen) upgradeScreen.classList.add('hidden');
         this.bracketScreen.classList.add('hidden');
         this.hud.classList.remove('hidden');
         this.victoryScreen.classList.add('hidden');
@@ -894,6 +935,292 @@ export class UIManager {
 
     hideBracketScreen() {
         this.bracketScreen.classList.add('hidden');
+    }
+
+    showDraftScreen(options, teamSoFar, teamSize, onPick, allowSkip = false) {
+        let screen = document.getElementById('draft-screen');
+        if (!screen) {
+            screen = document.createElement('div');
+            screen.id = 'draft-screen';
+            screen.className = 'overlay';
+            document.body.appendChild(screen);
+        }
+        screen.classList.remove('hidden');
+        this.hud.classList.add('hidden');
+
+        const teamLabel = allowSkip ? 'Replace a Lost Teammate?' : 'Build Your Team';
+        screen.innerHTML = `
+            <div class="draft-container">
+                <h1 class="title">${teamLabel}</h1>
+                <p class="draft-subtitle">Pick ${teamSoFar.length + 1} / ${teamSize}</p>
+                <div class="draft-options" id="draft-options"></div>
+                <div class="draft-team" id="draft-team"></div>
+                ${allowSkip ? '<button class="start-button draft-skip-btn" id="draft-skip">Skip</button>' : ''}
+            </div>
+        `;
+
+        const optionsEl = document.getElementById('draft-options');
+        for (const data of options) {
+            const card = document.createElement('div');
+            card.className = 'draft-card';
+            const s = data.stats;
+            const bst = s.hp + s.attack + s.defense + s.spAtk + s.spDef + s.speed;
+            card.innerHTML = `
+                <img src="${getSpriteUrl(data.id)}" alt="${data.name}">
+                <span class="draft-card-name">${data.name}</span>
+                <span class="draft-card-types">${data.types.join(' / ')}</span>
+                <span class="draft-card-bst">BST: ${bst}</span>
+            `;
+            card.addEventListener('click', () => {
+                screen.classList.add('hidden');
+                onPick(data);
+            });
+            optionsEl.appendChild(card);
+        }
+
+        // Show current team
+        const teamEl = document.getElementById('draft-team');
+        if (teamSoFar.length > 0) {
+            for (const t of teamSoFar) {
+                const mini = document.createElement('div');
+                mini.className = 'draft-team-member';
+                mini.innerHTML = `<img src="${getSpriteUrl(t.id)}" alt="${t.name}"><span>${t.name}</span>`;
+                teamEl.appendChild(mini);
+            }
+        }
+
+        if (allowSkip) {
+            document.getElementById('draft-skip').addEventListener('click', () => {
+                screen.classList.add('hidden');
+                onPick(null);
+            });
+        }
+    }
+
+    showUpgradeScreen(upgrades, team, onSelect) {
+        let screen = document.getElementById('upgrade-screen');
+        if (!screen) {
+            screen = document.createElement('div');
+            screen.id = 'upgrade-screen';
+            screen.className = 'overlay';
+            document.body.appendChild(screen);
+        }
+        screen.classList.remove('hidden');
+        this.hud.classList.add('hidden');
+
+        screen.innerHTML = `
+            <div class="upgrade-container">
+                <h1 class="title">Choose an Upgrade</h1>
+                <div class="upgrade-options" id="upgrade-options"></div>
+                <div class="upgrade-team" id="upgrade-team"></div>
+            </div>
+        `;
+
+        const optionsEl = document.getElementById('upgrade-options');
+        let selectedUpgrade = null;
+
+        for (const upg of upgrades) {
+            const card = document.createElement('div');
+            card.className = 'upgrade-card';
+            card.innerHTML = `
+                <span class="upgrade-icon">${upg.icon}</span>
+                <span class="upgrade-name">${upg.name}</span>
+                <span class="upgrade-desc">${upg.description}</span>
+            `;
+            card.addEventListener('click', () => {
+                if (upg.targetAll) {
+                    screen.classList.add('hidden');
+                    onSelect(upg, null);
+                } else {
+                    selectedUpgrade = upg;
+                    optionsEl.querySelectorAll('.upgrade-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    teamEl.querySelectorAll('.upgrade-team-member').forEach(m => m.classList.add('selectable'));
+                }
+            });
+            optionsEl.appendChild(card);
+        }
+
+        const teamEl = document.getElementById('upgrade-team');
+        for (const p of team) {
+            const member = document.createElement('div');
+            member.className = 'upgrade-team-member';
+            const hpPct = Math.round((p.hp / p.maxHp) * 100);
+            member.innerHTML = `
+                <img src="${p.sprite.src}" alt="${p.name}">
+                <span class="upgrade-member-name">${p.name}</span>
+                <div class="upgrade-hp-bar"><div class="upgrade-hp-fill" style="width:${hpPct}%"></div></div>
+            `;
+            member.addEventListener('click', () => {
+                if (selectedUpgrade && !selectedUpgrade.targetAll) {
+                    screen.classList.add('hidden');
+                    onSelect(selectedUpgrade, p);
+                }
+            });
+            teamEl.appendChild(member);
+        }
+    }
+
+    showEndlessGameOver(wave, score, team) {
+        let screen = document.getElementById('endless-gameover');
+        if (!screen) {
+            screen = document.createElement('div');
+            screen.id = 'endless-gameover';
+            screen.className = 'overlay';
+            document.body.appendChild(screen);
+        }
+        screen.classList.remove('hidden');
+        this.hud.classList.add('hidden');
+
+        screen.innerHTML = `
+            <div class="endless-go-container">
+                <h1 class="endless-go-title">Game Over</h1>
+                <div class="endless-go-stats">
+                    <div class="endless-go-stat"><span class="endless-go-label">Wave</span><span class="endless-go-value">${wave}</span></div>
+                    <div class="endless-go-stat"><span class="endless-go-label">Score</span><span class="endless-go-value">${score}</span></div>
+                </div>
+                <div class="endless-go-team" id="ego-team"></div>
+                <button class="start-button" id="ego-play-again">Play Again</button>
+            </div>
+        `;
+
+        const teamEl = document.getElementById('ego-team');
+        for (const p of team) {
+            const m = document.createElement('div');
+            m.className = 'endless-go-member ' + (p.alive ? 'alive' : 'fainted');
+            m.innerHTML = `<img src="${p.sprite.src}" alt="${p.name}"><span>${p.name}</span>`;
+            teamEl.appendChild(m);
+        }
+
+        document.getElementById('ego-play-again').addEventListener('click', () => {
+            screen.classList.add('hidden');
+            if (this.onPlayAgain) this.onPlayAgain();
+        });
+    }
+
+    updateWaveIndicator(wave) {
+        let el = document.getElementById('wave-indicator');
+        if (!el) {
+            el = document.createElement('span');
+            el.id = 'wave-indicator';
+            el.className = 'wave-indicator';
+            const top = document.querySelector('.hud-top');
+            if (top) top.insertBefore(el, top.firstChild.nextSibling);
+        }
+        el.textContent = `Wave ${wave}`;
+        el.classList.remove('hidden');
+    }
+
+    hideWaveIndicator() {
+        const el = document.getElementById('wave-indicator');
+        if (el) el.classList.add('hidden');
+    }
+
+    showCustomRosterScreen(allBaseForms, requiredCount) {
+        this.settingsScreen.classList.add('hidden');
+
+        let screen = document.getElementById('custom-roster-screen');
+        if (!screen) {
+            screen = document.createElement('div');
+            screen.id = 'custom-roster-screen';
+            screen.className = 'overlay';
+            document.body.appendChild(screen);
+        }
+        screen.classList.remove('hidden');
+
+        const selected = new Set();
+
+        const render = () => {
+            screen.innerHTML = `
+                <div class="custom-roster-container">
+                    <h1 class="title">Choose Your Roster</h1>
+                    <p class="custom-roster-subtitle">Select ${requiredCount} Pokemon</p>
+                    <div class="custom-roster-counter" id="cr-counter">Selected: 0 / ${requiredCount}</div>
+                    <div class="custom-roster-grid" id="cr-grid"></div>
+                    <div class="custom-roster-actions">
+                        <button class="start-button betting-skip-btn" id="cr-back">Back</button>
+                        <button class="start-button" id="cr-random">Randomize</button>
+                        <button class="start-button betting-confirm-btn" id="cr-confirm" disabled>Confirm Roster</button>
+                    </div>
+                </div>
+            `;
+
+            const grid = document.getElementById('cr-grid');
+            const counter = document.getElementById('cr-counter');
+            const confirmBtn = document.getElementById('cr-confirm');
+            const randomBtn = document.getElementById('cr-random');
+            const backBtn = document.getElementById('cr-back');
+
+            for (const poke of allBaseForms) {
+                const card = document.createElement('div');
+                card.className = 'custom-roster-card';
+                if (selected.has(poke.id)) card.classList.add('selected');
+                if (selected.size >= requiredCount && !selected.has(poke.id)) card.classList.add('maxed');
+                card.dataset.id = poke.id;
+
+                const img = document.createElement('img');
+                img.src = getSpriteUrl(poke.id);
+                img.alt = poke.name;
+
+                const name = document.createElement('span');
+                name.className = 'cr-name';
+                name.textContent = poke.name;
+
+                const types = document.createElement('span');
+                types.className = 'cr-types';
+                types.textContent = poke.types.join('/');
+
+                card.appendChild(img);
+                card.appendChild(name);
+                card.appendChild(types);
+
+                card.addEventListener('click', () => {
+                    if (selected.has(poke.id)) {
+                        selected.delete(poke.id);
+                    } else if (selected.size < requiredCount) {
+                        selected.add(poke.id);
+                    }
+                    updateCards();
+                });
+
+                grid.appendChild(card);
+            }
+
+            const updateCards = () => {
+                const cards = grid.querySelectorAll('.custom-roster-card');
+                cards.forEach(c => {
+                    const id = parseInt(c.dataset.id);
+                    c.classList.toggle('selected', selected.has(id));
+                    c.classList.toggle('maxed', selected.size >= requiredCount && !selected.has(id));
+                });
+                counter.textContent = `Selected: ${selected.size} / ${requiredCount}`;
+                confirmBtn.disabled = selected.size !== requiredCount;
+            };
+
+            confirmBtn.addEventListener('click', () => {
+                if (selected.size === requiredCount) {
+                    const roster = allBaseForms.filter(p => selected.has(p.id));
+                    screen.classList.add('hidden');
+                    if (this.onCustomRosterConfirm) this.onCustomRosterConfirm(roster);
+                }
+            });
+
+            randomBtn.addEventListener('click', () => {
+                selected.clear();
+                const shuffled = [...allBaseForms].sort(() => Math.random() - 0.5);
+                for (let i = 0; i < requiredCount && i < shuffled.length; i++) {
+                    selected.add(shuffled[i].id);
+                }
+                updateCards();
+            });
+
+            backBtn.addEventListener('click', () => {
+                screen.classList.add('hidden');
+                this.showSettings();
+            });
+        };
+
+        render();
     }
 
     showCommentaryBanner(text, type) {
