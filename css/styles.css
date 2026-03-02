@@ -1508,6 +1508,55 @@ input[type="range"] {
     color: #000 !important;
 }
 
+/* =========== Leaderboard Page =========== */
+.records-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.record-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    background: #12121e;
+    border: 2px solid #222;
+    text-align: center;
+}
+.record-value {
+    font-size: 1rem;
+    color: #f5a623;
+    font-weight: bold;
+}
+.record-label {
+    font-size: 0.4rem;
+    color: #a0a0c0;
+}
+.lb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.45rem;
+}
+.lb-table th {
+    color: #f5a623;
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 2px solid #333;
+}
+.lb-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #222;
+    color: #ccc;
+}
+.lb-table tr:hover td {
+    background: #1a1a2e;
+}
+.type-bar {
+    height: 16px;
+    display: inline-block;
+    min-width: 2px;
+}
+
 /* =========== Mobile Game Layout =========== */
 @media (max-width: 900px) {
     .hud-main {
@@ -1584,6 +1633,9 @@ input[type="range"] {
     }
     .features-list {
         grid-template-columns: 1fr;
+    }
+    .records-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 

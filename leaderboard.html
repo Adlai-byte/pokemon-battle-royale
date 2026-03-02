@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - Pokemon Battle Royale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="page-body">
+    <div class="page-container">
+        <div class="page-header">
+            <a href="index.html" class="back-btn">Back to Game</a>
+            <h1 class="page-title">All-Time Leaderboard</h1>
+        </div>
+
+        <!-- Personal Records Section -->
+        <div class="section-card">
+            <h2 class="section-title">Personal Records</h2>
+            <div id="personal-records" class="records-grid"></div>
+        </div>
+
+        <!-- Species Rankings Section -->
+        <div class="section-card">
+            <h2 class="section-title">Species Rankings</h2>
+            <div id="species-rankings"></div>
+        </div>
+
+        <!-- Type Analysis Section -->
+        <div class="section-card">
+            <h2 class="section-title">Type Analysis</h2>
+            <div id="type-analysis"></div>
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">Play</a>
+            <a href="info.html">Game Guide</a>
+            <a href="credits.html">Credits</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { POKEMON_DATA } from './js/data.js';
+
+        // Load data from localStorage
+        const history = JSON.parse(localStorage.getItem('pokemonBRHistory') || '[]');
+        const predictions = JSON.parse(localStorage.getItem('pokemonBRPredictions') || '{}');
+        const points = JSON.parse(localStorage.getItem('pokemonBRPoints') || '{}');
+        const winCounts = JSON.parse(localStorage.getItem('pokemonBRWinCounts') || '{}');
+
+        // --- Personal Records ---
+        const recordsEl = document.getElementById('personal-records');
+        const totalBattles = history.length;
+        const totalPredictions = predictions.totalPredictions || 0;
+        const correctPredictions = predictions.correctPredictions || 0;
+        const accuracy = totalPredictions > 0 ? Math.round((correctPredictions / totalPredictions) * 100) : 0;
+        const bestStreak = predictions.bestStreak || 0;
+        const totalPoints = points.totalPoints || 0;
+
+        const records = [
+            { label: 'Battles Played', value: totalBattles },
+            { label: 'Total Points', value: totalPoints },
+            { label: 'Predictions Made', value: totalPredictions },
+            { label: 'Correct Picks', value: correctPredictions },
+            { label: 'Accuracy', value: `${accuracy}%` },
+            { label: 'Best Streak', value: bestStreak },
+        ];
+
+        recordsEl.innerHTML = records.map(r => `
+            <div class="record-card">
+                <span class="record-value">${r.value}</span>
+                <span class="record-label">${r.label}</span>
+            </div>
+        `).join('');
+
+        // --- Species Rankings ---
+        const speciesEl = document.getElementById('species-rankings');
+
+        // Aggregate wins and kills from history
+        const speciesStats = {};
+        history.forEach(entry => {
+            if (!speciesStats[entry.name]) {
+                speciesStats[entry.name] = { wins: 0, totalKills: 0, appearances: 0 };
+            }
+            speciesStats[entry.name].wins++;
+            speciesStats[entry.name].totalKills += entry.kills || 0;
+            speciesStats[entry.name].appearances++;
+        });
+
+        const speciesList = Object.entries(speciesStats)
+            .map(([name, stats]) => ({
+                name,
+                wins: stats.wins,
+                avgKills: (stats.totalKills / stats.appearances).toFixed(1),
+                totalKills: stats.totalKills,
+            }))
+            .sort((a, b) => b.wins - a.wins || b.totalKills - a.totalKills);
+
+        if (speciesList.length === 0) {
+            speciesEl.innerHTML = '<p style="color: #a0a0c0; font-size: 0.45rem;">No battles recorded yet. Play some battles!</p>';
+        } else {
+            // Get sprite URL helper
+            const getSpriteUrl = (name) => {
+                const pokemon = POKEMON_DATA.find(p => p.name === name);
+                return pokemon ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png` : '';
+            };
+
+            speciesEl.innerHTML = `
+                <table class="lb-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Pokemon</th>
+                            <th>Wins</th>
+                            <th>Avg Kills</th>
+                            <th>Total Kills</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${speciesList.map((s, i) => `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td style="display:flex;align-items:center;gap:6px;">
+                                    <img src="${getSpriteUrl(s.name)}" style="width:24px;height:24px;image-rendering:pixelated;" alt="${s.name}">
+                                    ${s.name}
+                                </td>
+                                <td style="color:#f5a623;">${s.wins}</td>
+                                <td>${s.avgKills}</td>
+                                <td>${s.totalKills}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // --- Type Analysis ---
+        const typeEl = document.getElementById('type-analysis');
+        const typeWins = {};
+
+        history.forEach(entry => {
+            const pokemon = POKEMON_DATA.find(p => p.name === entry.name);
+            if (pokemon) {
+                pokemon.types.forEach(type => {
+                    typeWins[type] = (typeWins[type] || 0) + 1;
+                });
+            }
+        });
+
+        const typeList = Object.entries(typeWins)
+            .sort((a, b) => b[1] - a[1]);
+
+        const maxWins = typeList.length > 0 ? typeList[0][1] : 1;
+
+        // Type colors
+        const typeColors = {
+            Normal: '#A8A878', Fire: '#F08030', Water: '#6890F0', Electric: '#F8D030',
+            Grass: '#78C850', Ice: '#98D8D8', Fighting: '#C03028', Poison: '#A040A0',
+            Ground: '#E0C068', Flying: '#A890F0', Psychic: '#F85888', Bug: '#A8B820',
+            Rock: '#B8A038', Ghost: '#705898', Dragon: '#7038F8', Dark: '#705848',
+            Steel: '#B8B8D0', Fairy: '#EE99AC',
+        };
+
+        if (typeList.length === 0) {
+            typeEl.innerHTML = '<p style="color: #a0a0c0; font-size: 0.45rem;">No type data yet.</p>';
+        } else {
+            typeEl.innerHTML = typeList.map(([type, count]) => `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                    <span style="width:65px;font-size:0.4rem;color:#ccc;text-align:right;">${type}</span>
+                    <div class="type-bar" style="width:${(count / maxWins) * 100}%;background:${typeColors[type] || '#888'};"></div>
+                    <span style="font-size:0.35rem;color:#a0a0c0;">${count}</span>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
