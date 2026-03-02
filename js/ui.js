@@ -1,6 +1,7 @@
 // js/ui.js - Settings panel, HUD, event log, elimination banners, betting
 import { getSpriteUrl, TYPE_COLORS } from './data.js';
 import { POKEMON_DATA } from './data.js';
+import { ROLES, ROLE_CONFIG } from './battle.js';
 
 export class UIManager {
     constructor() {
@@ -1176,7 +1177,7 @@ export class UIManager {
         }
     }
 
-    showUpgradeScreen(upgrades, team, onSelect) {
+    showUpgradeScreen(upgrades, team, onSelect, onStrategy) {
         let screen = document.getElementById('upgrade-screen');
         if (!screen) {
             screen = document.createElement('div');
@@ -1187,13 +1188,25 @@ export class UIManager {
         screen.classList.remove('hidden');
         this.hud.classList.add('hidden');
 
+        const strategyBtn = onStrategy
+            ? '<button class="start-button" id="reassign-roles-btn" style="margin-top:12px;font-size:0.45rem;padding:6px 14px;">Reassign Roles</button>'
+            : '';
+
         screen.innerHTML = `
             <div class="upgrade-container">
                 <h1 class="title">Choose an Upgrade</h1>
                 <div class="upgrade-options" id="upgrade-options"></div>
                 <div class="upgrade-team" id="upgrade-team"></div>
+                ${strategyBtn}
             </div>
         `;
+
+        if (onStrategy) {
+            document.getElementById('reassign-roles-btn').addEventListener('click', () => {
+                screen.classList.add('hidden');
+                onStrategy();
+            });
+        }
 
         const optionsEl = document.getElementById('upgrade-options');
         let selectedUpgrade = null;
@@ -1238,6 +1251,76 @@ export class UIManager {
             });
             teamEl.appendChild(member);
         }
+    }
+
+    showStrategyScreen(teamData, suggestRoleFn, onConfirm) {
+        let screen = document.getElementById('strategy-screen');
+        if (!screen) {
+            screen = document.createElement('div');
+            screen.id = 'strategy-screen';
+            screen.className = 'overlay';
+            document.body.appendChild(screen);
+        }
+        screen.classList.remove('hidden');
+        this.hud.classList.add('hidden');
+
+        const roleAssignments = {};
+        // Auto-suggest roles
+        for (let i = 0; i < teamData.length; i++) {
+            roleAssignments[i] = teamData[i]._role || suggestRoleFn(teamData[i]);
+        }
+
+        const render = () => {
+            screen.innerHTML = `
+                <div class="strategy-container">
+                    <h1 class="title">Team Strategy</h1>
+                    <div id="strategy-members"></div>
+                    <button class="start-button strategy-confirm-btn" id="strategy-confirm">Begin Wave</button>
+                </div>
+            `;
+
+            const membersEl = document.getElementById('strategy-members');
+            for (let i = 0; i < teamData.length; i++) {
+                const data = teamData[i];
+                const row = document.createElement('div');
+                row.className = 'strategy-member';
+
+                row.innerHTML = `
+                    <img src="${getSpriteUrl(data.id)}" alt="${data.name}">
+                    <div class="strategy-member-info">
+                        <span class="strategy-member-name">${data.name}</span>
+                        <span class="strategy-member-types">${data.types.join(' / ')}</span>
+                    </div>
+                    <div class="strategy-roles" data-idx="${i}"></div>
+                `;
+
+                const rolesEl = row.querySelector('.strategy-roles');
+                for (const roleKey of Object.values(ROLES)) {
+                    const cfg = ROLE_CONFIG[roleKey];
+                    const btn = document.createElement('button');
+                    btn.className = 'strategy-role-btn';
+                    btn.style.setProperty('--role-color', cfg.color);
+                    btn.textContent = cfg.label;
+                    if (roleAssignments[i] === roleKey) btn.classList.add('active');
+
+                    btn.addEventListener('click', () => {
+                        roleAssignments[i] = roleKey;
+                        rolesEl.querySelectorAll('.strategy-role-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                    rolesEl.appendChild(btn);
+                }
+
+                membersEl.appendChild(row);
+            }
+
+            document.getElementById('strategy-confirm').addEventListener('click', () => {
+                screen.classList.add('hidden');
+                onConfirm(roleAssignments);
+            });
+        };
+
+        render();
     }
 
     showEndlessGameOver(wave, score, team) {

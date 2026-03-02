@@ -3,6 +3,14 @@ import { getSpriteUrl, POKEMON_DATA, EVOLUTION_CHAINS } from './data.js';
 import { getMoveset, MOVE_CAT } from './moves.js';
 import { getAbility } from './abilities.js';
 
+// Role badge visuals (matches ROLE_CONFIG in battle.js, duplicated here to avoid circular import)
+const ROLE_BADGE = {
+    attacker:  { initial: 'A', color: '#e94560' },
+    tank:      { initial: 'T', color: '#4a9eff' },
+    support:   { initial: 'S', color: '#50c878' },
+    assassin:  { initial: 'X', color: '#c850c0' },
+};
+
 const HP_MULTIPLIER = 3;
 const SPRITE_SIZE = 64;
 const BOB_AMPLITUDE = 3;
@@ -104,6 +112,10 @@ export class Pokemon {
         this.ability = getAbility(data.id);
         this.abilityState = {}; // Per-ability runtime state (e.g. sturdyUsed, flashFireActive)
         this.weatherSpeedMult = 1;
+
+        // Role system (endless mode)
+        this.role = null;
+        this._nearestAlly = null;
 
         // Stats tracking for leaderboard
         this.stats = { damageDealt: 0, damageTaken: 0, kills: 0, itemsPickedUp: 0, movesUsed: 0, biggestHit: 0, survivalTime: 0 };
@@ -265,22 +277,26 @@ export class Pokemon {
             }
         }
 
-        // Movement: seek target or wander
-        const hasTarget = this.target && this.target.alive && !this.target.eliminating;
-        if (hasTarget) {
-            const dist = this.distanceTo(this.target);
-            if (dist > COMBAT_RANGE * 0.85) {
-                this.targetX = this.target.x;
-                this.targetY = this.target.y;
+        // Movement: role-based or default
+        if (this.role && this._isPlayerTeam) {
+            this._roleBasedMovement(dt, time, remainingCount);
+        } else {
+            const hasTarget = this.target && this.target.alive && !this.target.eliminating;
+            if (hasTarget) {
+                const dist = this.distanceTo(this.target);
+                if (dist > COMBAT_RANGE * 0.85) {
+                    this.targetX = this.target.x;
+                    this.targetY = this.target.y;
+                    this._moveTowardTarget(dt, remainingCount);
+                }
+            } else {
+                const wanderInterval = remainingCount <= 5 ? 1000 : WANDER_CHANGE_INTERVAL;
+                if (time - this.lastWanderChange > wanderInterval) {
+                    this._pickNewWanderTarget(remainingCount);
+                    this.lastWanderChange = time;
+                }
                 this._moveTowardTarget(dt, remainingCount);
             }
-        } else {
-            const wanderInterval = remainingCount <= 5 ? 1000 : WANDER_CHANGE_INTERVAL;
-            if (time - this.lastWanderChange > wanderInterval) {
-                this._pickNewWanderTarget(remainingCount);
-                this.lastWanderChange = time;
-            }
-            this._moveTowardTarget(dt, remainingCount);
         }
     }
 
@@ -312,6 +328,80 @@ export class Pokemon {
         const step = Math.min(dist, speedFactor * (dt / 16));
         this.x += (dx / dist) * step;
         this.y += (dy / dist) * step;
+    }
+
+    _roleBasedMovement(dt, time, remainingCount) {
+        const hasTarget = this.target && this.target.alive && !this.target.eliminating;
+
+        if (this.role === 'tank') {
+            if (hasTarget) {
+                // Always advance toward nearest enemy (frontline)
+                this.targetX = this.target.x;
+                this.targetY = this.target.y;
+                this._moveTowardTarget(dt, remainingCount);
+            } else {
+                // Push toward arena center when no target
+                this.targetX = this.arenaWidth / 2;
+                this.targetY = this.arenaHeight / 2;
+                this._moveTowardTarget(dt, remainingCount);
+            }
+        } else if (this.role === 'support') {
+            if (this._nearestAlly) {
+                const allyDist = this.distanceTo(this._nearestAlly);
+                if (allyDist > 120) {
+                    // Stay within ~120px of nearest ally
+                    this.targetX = this._nearestAlly.x;
+                    this.targetY = this._nearestAlly.y;
+                    this._moveTowardTarget(dt, remainingCount);
+                } else if (hasTarget && this.distanceTo(this.target) > COMBAT_RANGE * 0.85) {
+                    // Approach enemies only when close to allies
+                    this.targetX = this.target.x;
+                    this.targetY = this.target.y;
+                    this._moveTowardTarget(dt, remainingCount);
+                }
+            } else if (hasTarget) {
+                // No ally found, fall back to normal chase
+                if (this.distanceTo(this.target) > COMBAT_RANGE * 0.85) {
+                    this.targetX = this.target.x;
+                    this.targetY = this.target.y;
+                    this._moveTowardTarget(dt, remainingCount);
+                }
+            }
+        } else if (this.role === 'assassin') {
+            if (hasTarget) {
+                // Chase with Y-offset for flanking
+                const dx = this.target.x - this.x;
+                const flankY = dx > 0 ? -30 : 30; // flank from above/below based on direction
+                this.targetX = this.target.x;
+                this.targetY = this.target.y + flankY;
+                this._moveTowardTarget(dt, remainingCount);
+            } else {
+                // Wander in flanking positions (edges)
+                const wanderInterval = remainingCount <= 5 ? 1000 : WANDER_CHANGE_INTERVAL;
+                if (time - this.lastWanderChange > wanderInterval) {
+                    this.targetX = this.arenaWidth * 0.7 + Math.random() * (this.arenaWidth * 0.25);
+                    this.targetY = Math.random() * this.arenaHeight;
+                    this.lastWanderChange = time;
+                }
+                this._moveTowardTarget(dt, remainingCount);
+            }
+        } else {
+            // Attacker: same as default chase
+            if (hasTarget) {
+                if (this.distanceTo(this.target) > COMBAT_RANGE * 0.85) {
+                    this.targetX = this.target.x;
+                    this.targetY = this.target.y;
+                    this._moveTowardTarget(dt, remainingCount);
+                }
+            } else {
+                const wanderInterval = remainingCount <= 5 ? 1000 : WANDER_CHANGE_INTERVAL;
+                if (time - this.lastWanderChange > wanderInterval) {
+                    this._pickNewWanderTarget(remainingCount);
+                    this.lastWanderChange = time;
+                }
+                this._moveTowardTarget(dt, remainingCount);
+            }
+        }
     }
 
     startElimination(attacker) {
@@ -548,6 +638,21 @@ export class Pokemon {
                 ctx.fillStyle = 'rgba(180, 180, 210, 0.7)';
                 ctx.font = '8px sans-serif';
                 ctx.fillText(this.ability, drawX, barY - 13);
+            }
+
+            // Role badge (player team only)
+            if (this.role && this._isPlayerTeam && ROLE_BADGE[this.role]) {
+                const badge = ROLE_BADGE[this.role];
+                const badgeX = drawX + barWidth / 2 + 10;
+                const badgeY = barY + 2;
+                ctx.fillStyle = badge.color;
+                ctx.beginPath();
+                ctx.arc(badgeX, badgeY, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(badge.initial, badgeX, badgeY + 3);
             }
         }
 

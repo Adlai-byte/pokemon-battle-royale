@@ -3,8 +3,73 @@
 // and casts special moves when energy is full. No 1v1 locking.
 import { getTypeMultiplier, POKEMON_DATA, EVOLUTION_CHAINS } from './data.js';
 import { COMBAT_RANGE } from './pokemon.js';
-import { MOVE_CAT } from './moves.js';
+import { MOVE_CAT, getMoveset } from './moves.js';
 import { getAbilityEffect } from './abilities.js';
+
+// === ROLE SYSTEM (Endless mode only) ===
+export const ROLES = {
+    ATTACKER: 'attacker',
+    TANK: 'tank',
+    SUPPORT: 'support',
+    ASSASSIN: 'assassin',
+};
+
+export const ROLE_CONFIG = {
+    [ROLES.ATTACKER]: {
+        label: 'Attacker', initial: 'A', color: '#e94560',
+        moveWeights: {
+            [MOVE_CAT.PHYSICAL]: 2.0, [MOVE_CAT.SPECIAL]: 2.0,
+            [MOVE_CAT.DEFENSE]: 0.5, [MOVE_CAT.ENHANCE]: 1.5, [MOVE_CAT.STATUS]: 0.5,
+        },
+        spawnXBase: 100,
+    },
+    [ROLES.TANK]: {
+        label: 'Tank', initial: 'T', color: '#4a9eff',
+        moveWeights: {
+            [MOVE_CAT.PHYSICAL]: 1.0, [MOVE_CAT.SPECIAL]: 1.0,
+            [MOVE_CAT.DEFENSE]: 3.0, [MOVE_CAT.ENHANCE]: 0.5, [MOVE_CAT.STATUS]: 1.0,
+        },
+        spawnXBase: 150,
+    },
+    [ROLES.SUPPORT]: {
+        label: 'Support', initial: 'S', color: '#50c878',
+        moveWeights: {
+            [MOVE_CAT.PHYSICAL]: 0.5, [MOVE_CAT.SPECIAL]: 0.5,
+            [MOVE_CAT.DEFENSE]: 2.0, [MOVE_CAT.ENHANCE]: 1.5, [MOVE_CAT.STATUS]: 3.0,
+        },
+        spawnXBase: 60,
+    },
+    [ROLES.ASSASSIN]: {
+        label: 'Assassin', initial: 'X', color: '#c850c0',
+        moveWeights: {
+            [MOVE_CAT.PHYSICAL]: 2.5, [MOVE_CAT.SPECIAL]: 2.5,
+            [MOVE_CAT.DEFENSE]: 0.3, [MOVE_CAT.ENHANCE]: 2.0, [MOVE_CAT.STATUS]: 0.3,
+        },
+        spawnXBase: 80,
+    },
+};
+
+export function suggestRole(pokemonData) {
+    const s = pokemonData.stats;
+    const offense = Math.max(s.attack, s.spAtk);
+    const bulk = s.hp + s.defense + s.spDef;
+
+    // Check moveset for status/defense count
+    const moves = getMoveset(pokemonData.id);
+    let statusDefCount = 0;
+    for (const m of moves) {
+        if (m.cat === MOVE_CAT.STATUS || m.cat === MOVE_CAT.DEFENSE) statusDefCount++;
+    }
+
+    // Speed >= 90 and high offense → Assassin
+    if (s.speed >= 90 && offense >= 90) return ROLES.ASSASSIN;
+    // 2+ status/defense moves → Support
+    if (statusDefCount >= 2) return ROLES.SUPPORT;
+    // High bulk, low offense → Tank
+    if (bulk >= 250 && offense < 85) return ROLES.TANK;
+    // Default → Attacker
+    return ROLES.ATTACKER;
+}
 
 const BASE_ATTACK_COOLDOWN = 1200; // ms base auto-attack interval
 const SPECIAL_COOLDOWN = 800;      // ms pause after casting special
@@ -91,6 +156,20 @@ export class BattleEngine {
             }
         }
 
+        // Assign _nearestAlly for support-role Pokemon
+        for (const p of alive) {
+            if (p.role && p._isPlayerTeam) {
+                let nearestAlly = null;
+                let nearestAllyDist = Infinity;
+                for (const other of alive) {
+                    if (other === p || other._isPlayerTeam !== p._isPlayerTeam) continue;
+                    const d = p.distanceTo(other);
+                    if (d < nearestAllyDist) { nearestAllyDist = d; nearestAlly = other; }
+                }
+                p._nearestAlly = nearestAlly;
+            }
+        }
+
         // Process each Pokemon independently
         for (const p of alive) {
             if (p.combatCooldown > 0) continue;
@@ -117,6 +196,7 @@ export class BattleEngine {
     }
 
     _findNearestTarget(pokemon, alive) {
+        const enemies = [];
         let nearest = null;
         let nearestDist = Infinity;
         for (const other of alive) {
@@ -125,12 +205,53 @@ export class BattleEngine {
             if (pokemon._isPlayerTeam !== undefined && other._isPlayerTeam !== undefined) {
                 if (pokemon._isPlayerTeam === other._isPlayerTeam) continue;
             }
+            enemies.push(other);
             const dist = pokemon.distanceTo(other);
             if (dist < nearestDist) {
                 nearestDist = dist;
                 nearest = other;
             }
         }
+
+        // Taunt: enemy Pokemon near a player Tank have 65% chance to target the Tank
+        if (pokemon._isPlayerTeam === false) {
+            const tanks = alive.filter(p => p._isPlayerTeam && p.role === ROLES.TANK && pokemon.distanceTo(p) < 200);
+            if (tanks.length > 0 && Math.random() < 0.65) {
+                // Pick closest tank
+                let closestTank = tanks[0], closestDist = pokemon.distanceTo(tanks[0]);
+                for (let i = 1; i < tanks.length; i++) {
+                    const d = pokemon.distanceTo(tanks[i]);
+                    if (d < closestDist) { closestDist = d; closestTank = tanks[i]; }
+                }
+                return closestTank;
+            }
+        }
+
+        // Role-based targeting for player team
+        if (pokemon.role && pokemon._isPlayerTeam && enemies.length > 0) {
+            if (pokemon.role === ROLES.ASSASSIN) {
+                // Target lowest HP% enemy
+                let lowestRatio = Infinity, lowestTarget = null;
+                for (const e of enemies) {
+                    const ratio = e.hp / e.maxHp;
+                    if (ratio < lowestRatio) { lowestRatio = ratio; lowestTarget = e; }
+                }
+                return lowestTarget;
+            }
+            if (pokemon.role === ROLES.SUPPORT) {
+                // Prefer enemies without status effects (so debuffs land)
+                const unafflicted = enemies.filter(e => !e.statusEffect);
+                if (unafflicted.length > 0) {
+                    let best = unafflicted[0], bestDist = pokemon.distanceTo(unafflicted[0]);
+                    for (let i = 1; i < unafflicted.length; i++) {
+                        const d = pokemon.distanceTo(unafflicted[i]);
+                        if (d < bestDist) { bestDist = d; best = unafflicted[i]; }
+                    }
+                    return best;
+                }
+            }
+        }
+
         return nearest;
     }
 
@@ -293,6 +414,11 @@ export class BattleEngine {
                 if (totalBuffs > 4) w *= 0.3;
             } else if (move.cat === MOVE_CAT.STATUS) {
                 w = target.statusEffect ? 0.2 : 2;
+            }
+            // Apply role-based move weight multiplier
+            if (user.role && ROLE_CONFIG[user.role]) {
+                const roleMult = ROLE_CONFIG[user.role].moveWeights[move.cat];
+                if (roleMult !== undefined) w *= roleMult;
             }
             return w;
         });

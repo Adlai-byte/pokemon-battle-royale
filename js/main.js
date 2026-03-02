@@ -1,7 +1,7 @@
 // js/main.js - App entry point, game loop, state management
 import { POKEMON_DATA, EVOLUTION_CHAINS } from './data.js';
 import { Pokemon } from './pokemon.js';
-import { BattleEngine } from './battle.js';
+import { BattleEngine, ROLE_CONFIG, ROLES, suggestRole } from './battle.js';
 import { EffectsManager } from './effects.js';
 import { Arena } from './arena.js';
 import { UIManager } from './ui.js';
@@ -483,8 +483,18 @@ class Game {
             if (this.endlessTeamData.length < this.endlessTeamSize) {
                 this._showEndlessDraft();
             } else {
-                this._startEndlessWave();
+                this._showStrategyScreen();
             }
+        });
+    }
+
+    _showStrategyScreen() {
+        this.ui.showStrategyScreen(this.endlessTeamData, suggestRole, (roleAssignments) => {
+            // Store role assignments on team data
+            for (let i = 0; i < this.endlessTeamData.length; i++) {
+                this.endlessTeamData[i]._role = roleAssignments[i];
+            }
+            this._startEndlessWave();
         });
     }
 
@@ -500,18 +510,27 @@ class Game {
         }
 
         // Create team Pokemon from data
-        this.endlessTeamPokemon = this.endlessTeamData.map(data => {
+        const teamCount = this.endlessTeamData.length;
+        this.endlessTeamPokemon = this.endlessTeamData.map((data, idx) => {
             const p = new Pokemon(data, this.arena.width, this.arena.height);
             p._endlessExp = data._endlessExp || 0;
             p._isPlayerTeam = true;
+            // Assign role
+            if (data._role) {
+                p.role = data._role;
+            }
             // Restore HP from previous wave
             if (data._savedHpRatio !== undefined && data._savedHpRatio > 0) {
                 p.hp = Math.max(1, Math.round(p.maxHp * data._savedHpRatio));
                 p.displayHp = p.hp;
             }
-            // Place on left side
-            p.x = 100 + Math.random() * 100;
-            p.y = this.arena.height / 2 + (Math.random() - 0.5) * 200;
+            // Role-based spawn X, distribute Y evenly
+            const roleCfg = p.role && ROLE_CONFIG[p.role];
+            const spawnX = roleCfg ? roleCfg.spawnXBase + Math.random() * 40 : 100 + Math.random() * 100;
+            const ySpread = this.arena.height * 0.6;
+            const yStart = (this.arena.height - ySpread) / 2;
+            p.x = spawnX;
+            p.y = teamCount > 1 ? yStart + (idx / (teamCount - 1)) * ySpread : this.arena.height / 2;
             return p;
         });
 
@@ -644,18 +663,20 @@ class Game {
                 const evoData = POKEMON_DATA.find(d => d.id === chain.nextId);
                 if (evoData && (needsFirst || needsSecond)) {
                     const oldName = p.name;
-                    // Store EXP before evolve (evolve resets some state)
+                    // Store EXP and role before evolve (evolve resets some state)
                     const savedExp = p._endlessExp;
+                    const savedRole = p.role;
                     p.killCount = chain.killsNeeded; // Force evolution eligibility
                     p.evolve(evoData);
                     p._endlessExp = savedExp;
+                    p.role = savedRole;
                     this.ui.addEvent(`${oldName} evolved into ${p.name}!`);
 
                     // Update team data to match evolved form
                     const idx = this.endlessTeamData.findIndex(d => d.id !== p.id && d.name !== p.name);
                     for (let i = 0; i < this.endlessTeamData.length; i++) {
                         if (this.endlessTeamPokemon[i] === p) {
-                            this.endlessTeamData[i] = { ...evoData, _endlessExp: savedExp };
+                            this.endlessTeamData[i] = { ...evoData, _endlessExp: savedExp, _role: savedRole };
                             break;
                         }
                     }
@@ -670,7 +691,8 @@ class Game {
                 this.endlessTeamData[i] = {
                     ...POKEMON_DATA.find(d => d.id === p.id) || this.endlessTeamData[i],
                     _endlessExp: p._endlessExp || 0,
-                    _savedHpRatio: p.alive ? p.hp / p.maxHp : 0
+                    _savedHpRatio: p.alive ? p.hp / p.maxHp : 0,
+                    _role: p.role || this.endlessTeamData[i]._role || null,
                 };
             }
         }
@@ -712,6 +734,9 @@ class Game {
             } else {
                 this._startEndlessWave();
             }
+        }, () => {
+            // "Reassign Roles" callback
+            this._showStrategyScreen();
         });
     }
 
@@ -745,6 +770,7 @@ class Game {
 
         this.ui.showDraftScreen(options, this.endlessTeamData, this.endlessTeamSize, (picked) => {
             if (picked) {
+                picked._role = suggestRole(picked);
                 this.endlessTeamData.push(picked);
             }
             if (this.endlessTeamData.length < this.endlessTeamSize && picked) {
