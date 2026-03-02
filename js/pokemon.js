@@ -414,6 +414,18 @@ export class Pokemon {
             ctx.stroke();
         }
 
+        // "Your Pick" golden ring
+        if (this.isPlayerPick && this.alive) {
+            ctx.save();
+            ctx.strokeStyle = '#f5a623';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.5 + Math.sin(time * 0.005) * 0.3;
+            ctx.beginPath();
+            ctx.arc(drawX, drawY - 8, 28, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
         // Draw sprite
         ctx.drawImage(
             this.sprite,

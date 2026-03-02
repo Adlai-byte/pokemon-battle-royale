@@ -28,6 +28,7 @@ export class UIManager {
         this.paused = false;
 
         this.muteBtn = document.getElementById('mute-btn');
+        this.camBtn = document.getElementById('cam-btn');
         this.weatherIndicator = document.getElementById('weather-indicator');
         this.leaderboard = document.getElementById('leaderboard');
         this.leaderboardList = document.getElementById('leaderboard-list');
@@ -98,6 +99,10 @@ export class UIManager {
                 const muted = this.onMuteToggle();
                 this.muteBtn.textContent = muted ? 'Unmute' : 'Mute';
             }
+        });
+
+        this.camBtn?.addEventListener('click', () => {
+            if (this.onCamToggle) this.onCamToggle();
         });
 
         this.lbTabs.forEach(tab => {

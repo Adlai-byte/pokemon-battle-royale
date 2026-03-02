@@ -52,6 +52,7 @@ class Game {
         this.ui.onStart = (rosterSize) => this._prepareRoster(rosterSize);
         this.ui.onBettingConfirm = () => this._startBattle();
         this.ui.onPlayAgain = () => {
+            this.arena.resetCamera();
             this.music.playTrack('menu');
             this.tournamentMode = false;
             this.tournamentRound = 0;
@@ -64,6 +65,11 @@ class Game {
             this.ui.showSettings();
         };
         this.ui.onMuteToggle = () => this.music.toggleMute();
+        this.ui.onCamToggle = () => {
+            this.arena.autoCam = !this.arena.autoCam;
+            if (!this.arena.autoCam) this.arena.resetCamera();
+            this.ui.camBtn.textContent = this.arena.autoCam ? 'Auto-Cam' : 'Free View';
+        };
 
         this.ui.showSettings();
         this.music.playTrack('menu');
@@ -113,6 +119,12 @@ class Game {
         this.itemManager.clear();
         this.weather.reset();
 
+        // Mark predicted Pokemon with golden ring
+        if (this.ui.predictionState) {
+            const pick = this.pokemons.find(p => p.originalId === this.ui.predictionState.predictedId);
+            if (pick) pick.isPlayerPick = true;
+        }
+
         this.ui.showBattle(this.totalCount);
         this.ui.showCountdown(() => {
             this.running = true;
@@ -142,6 +154,7 @@ class Game {
                 const survivor = this.pokemons.find(p => p.alive && !p.eliminating) || attacker;
                 this.winner = survivor;
                 this.running = false;
+                this.arena.resetCamera();
                 this.music.playTrack('victory');
                 this.effects.spawnConfetti(survivor.x, survivor.y);
                 this.ui.showVictory(survivor, this.pokemons);
@@ -216,6 +229,7 @@ class Game {
             setTimeout(() => {
                 const survivor = this.pokemons.find(p => p.alive && !p.eliminating) || attacker;
                 this.running = false;
+                this.arena.resetCamera();
 
                 // Record results for this group: sort by elimination order (alive first, then by kills)
                 const sorted = [...this.pokemons].sort((a, b) => {
@@ -404,6 +418,30 @@ class Game {
             this.ui.updateWeather(this.weather.currentWeather);
         }
 
+        // Camera focus: pick most interesting Pokemon to follow
+        if (this.arena.autoCam && alivePokemons.length > 1) {
+            let bestScore = -1, bestX = this.arena.width / 2, bestY = this.arena.height / 2;
+            for (const p of alivePokemons) {
+                let score = p.stats.kills * 10;
+                score += (1 - p.hp / p.maxHp) * 30;
+                const nearby = alivePokemons.filter(o => o !== p && p.distanceTo(o) < 150).length;
+                score += nearby * 15;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestX = p.x;
+                    bestY = p.y;
+                }
+            }
+            this.arena.camera.targetX = bestX - this.arena.width / 2;
+            this.arena.camera.targetY = bestY - this.arena.height / 2;
+            this.arena.camera.targetZoom = alivePokemons.length <= 5 ? 1.0 : 1.2;
+        } else {
+            this.arena.camera.targetX = 0;
+            this.arena.camera.targetY = 0;
+            this.arena.camera.targetZoom = 1;
+        }
+        this.arena.updateCamera(dt);
+
         this.arena.beginFrame(this.effects.screenShake.x, this.effects.screenShake.y);
         // Draw weather (storm circle, weather overlay, heal zones) on arena
         this.weather.draw(this.arena.ctx, this.arena.width, this.arena.height, timestamp);
@@ -412,6 +450,35 @@ class Game {
         for (const p of this.pokemons) p.draw(this.arena.ctx, timestamp);
         this.effects.draw(this.arena.ctx);
         this.arena.endFrame();
+
+        // Minimap (drawn outside camera transform)
+        if (this.arena.autoCam && this.arena.camera.zoom > 1.05) {
+            const mw = 140, mh = 90, mx = this.arena.ctx.canvas.width - mw - 8, my = 8;
+            const ctx = this.arena.ctx;
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.globalAlpha = 0.7;
+            ctx.fillStyle = '#0a0a14';
+            ctx.fillRect(mx, my, mw, mh);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(mx, my, mw, mh);
+            const sx = mw / this.arena.width, sy = mh / this.arena.height;
+            for (const p of this.pokemons) {
+                if (!p.alive) continue;
+                ctx.fillStyle = '#4CAF50';
+                ctx.fillRect(mx + p.x * sx - 2, my + p.y * sy - 2, 4, 4);
+            }
+            ctx.strokeStyle = '#f5a623';
+            ctx.lineWidth = 1;
+            const vw = this.arena.width / this.arena.camera.zoom;
+            const vh = this.arena.height / this.arena.camera.zoom;
+            const vx = this.arena.camera.x + (this.arena.width - vw) / 2;
+            const vy = this.arena.camera.y + (this.arena.height - vh) / 2;
+            ctx.strokeRect(mx + vx * sx, my + vy * sy, vw * sx, vh * sy);
+            ctx.globalAlpha = 1;
+            ctx.restore();
+        }
     }
 }
 

@@ -163,6 +163,8 @@ export class Arena {
         this.currentArena = ARENA_TYPES[0];
         this._bgCanvas = null;
         this._bgDirty = true;
+        this.camera = { x: 0, y: 0, zoom: 1, targetX: 0, targetY: 0, targetZoom: 1 };
+        this.autoCam = true;
         this.resize();
         window.addEventListener('resize', () => this.resize());
     }
@@ -201,11 +203,29 @@ export class Arena {
         );
         ctx.scale(this.scale, this.scale);
 
+        // Apply camera transform
+        const cx = this.width / 2;
+        const cy = this.height / 2;
+        ctx.translate(cx, cy);
+        ctx.scale(this.camera.zoom, this.camera.zoom);
+        ctx.translate(-this.camera.x - cx, -this.camera.y - cy);
+
         this._drawBackground(ctx);
     }
 
     endFrame() {
         this.ctx.restore();
+    }
+
+    updateCamera(dt) {
+        const lerp = Math.min(1, dt * 0.002);
+        this.camera.x += (this.camera.targetX - this.camera.x) * lerp;
+        this.camera.y += (this.camera.targetY - this.camera.y) * lerp;
+        this.camera.zoom += (this.camera.targetZoom - this.camera.zoom) * lerp;
+    }
+
+    resetCamera() {
+        this.camera = { x: 0, y: 0, zoom: 1, targetX: 0, targetY: 0, targetZoom: 1 };
     }
 
     _renderOffscreenBg() {

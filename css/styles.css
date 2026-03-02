@@ -278,6 +278,22 @@ input[type="range"] {
     transition: background 0.1s;
 }
 
+#cam-btn {
+    padding: 5px 14px;
+    border: 2px solid #f5a623;
+    background: transparent;
+    color: #f5a623;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    transition: background 0.1s;
+}
+
+#cam-btn:hover {
+    background: #f5a623;
+    color: #000;
+}
+
 /* Main content: leaderboard | arena | event log */
 .hud-main {
     display: flex;
